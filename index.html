@@ -3,546 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>飲食店 MVP モック v2.3</title>
+  <title>飲食店 MVP モック v2.3.1 Full</title>
   <style>
-    :root { --primary:#0a7cff; --bg:#f7f7f9; --card:#fff; --text:#222; --muted:#777; }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP",system-ui,sans-serif;color:var(--text);background:#f7f7f9}
-    header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;z-index:10}
-    h1{margin:0;padding:14px 16px;font-size:18px}
-    nav{display:flex;gap:8px;padding:8px 12px 12px;flex-wrap:wrap}
-    nav button{flex:1;min-width:120px;padding:10px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
-    nav button.active{background:#0a7cff;color:#fff;border-color:#0a7cff}
-    main{padding:16px;max-width:1100px;margin:0 auto}
-    .card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:16px;margin-bottom:16px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    label{font-size:12px;color:#777;display:block;margin-bottom:4px}
-    input, textarea, select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff}
-    input[type="file"]{padding:6px}
-    textarea{min-height:96px}
-    .col{flex:1;min-width:160px}
-    .btn{padding:10px 14px;border:none;border-radius:8px;background:#0a7cff;color:#fff;cursor:pointer}
-    .btn.secondary{background:#eaeef4;color:#222}
-    .btn.danger{background:#ff4d4f}
-    .btn.ghost{background:transparent;color:#0a7cff;border:1px solid #0a7cff}
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
-    th{background:#fafafa;position:sticky;top:0}
-    .right{text-align:right}
-    .muted{color:#777}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:#f1f5ff;color:#225}
-    .flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
-    .hidden{display:none}
-    footer{padding:24px;text-align:center;color:#999}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:800px){.grid2{grid-template-columns:1fr}}
-    .diff-pos{color:#0a7c2a;font-weight:700}
-    .diff-neg{color:#b00020;font-weight:700}
-    .badges{display:flex;gap:6px;flex-wrap:wrap;color:#333}
-    .badge{padding:2px 6px;border-radius:6px;background:#f1f5ff;font-size:12px;border:1px solid #dfe6ff}
-    .dim{opacity:.5}
-    #lockOverlay{position:fixed;inset:0;background:rgba(255,255,255,.96);display:none;align-items:center;justify-content:center;z-index:9999}
-    #lockBox{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:20px;max-width:360px;width:90%}
-    #lockBox h3{margin:0 0 12px}
+    body { font-family: sans-serif; margin:0; background:#f7f7f9; }
+    header { background:#fff; border-bottom:1px solid #ddd; position:sticky; top:0; z-index:10; }
+    h1 { margin:0; padding:12px 16px; font-size:18px; }
+    nav { display:flex; gap:6px; padding:8px; flex-wrap:wrap; }
+    nav button { flex:1; min-width:100px; padding:8px; border:1px solid #ccc; border-radius:6px; cursor:pointer; background:#fff; }
+    nav button.active { background:#0a7cff; color:#fff; border-color:#0a7cff; }
+    main { padding:16px; max-width:900px; margin:0 auto; }
+    section { background:#fff; padding:16px; border-radius:8px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .hidden { display:none; }
+    .btn{padding:6px 12px; border-radius:6px; border:1px solid #ccc; cursor:pointer; margin:2px;}
+    .btn.primary{background:#0a7cff;color:#fff;border-color:#0a7cff;}
+    .right{text-align:right;}
+    table{width:100%;border-collapse:collapse;margin-top:8px;}
+    th,td{border:1px solid #ccc;padding:4px;}
   </style>
 </head>
 <body>
-  <div id="lockOverlay">
-    <div id="lockBox">
-      <h3>パスコード（4桁）</h3>
-      <p class="muted">設定されている場合のみ必要です。</p>
-      <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="****" />
-      <div class="flex mt12">
-        <button id="pinEnter" class="btn">解除</button>
-      </div>
-      <div id="pinMsg" class="muted mt8"></div>
-    </div>
-  </div>
-
   <header>
-    <h1>飲食店 MVP モック v2.3</h1>
+    <h1>飲食店 MVP モック v2.3.1 Full</h1>
     <nav>
       <button data-tab="home" class="active">ホーム</button>
       <button data-tab="sales">売上入力</button>
       <button data-tab="customers">顧客台帳</button>
-      <button data-tab="line">LINE配信（ダミー）</button>
+      <button data-tab="line">LINE配信</button>
       <button data-tab="settings">設定</button>
     </nav>
   </header>
   <main>
-    <section id="home" class="card">
-      <h2>今日のダッシュボード</h2>
-      <div class="row mt8">
-        <div class="card" style="flex:1">
-          <div class="muted">本日の売上（合計）</div>
-          <div style="font-size:28px;font-weight:700"><span id="todayTotal">0</span> 円 <span id="todayClosed" class="pill hidden">締め済</span></div>
-          <div class="badges mt8">
-            <span class="badge">現金: <b id="todayCash">0</b> 円</span>
-            <span class="badge">カード: <b id="todayCard">0</b> 円</span>
-            <span class="badge">CL合計: <b id="todayCL">0</b> 円</span>
-            <span class="badge dim">PayPay: <b id="todayPayPay">0</b></span>
-            <span class="badge dim">交通系: <b id="todayTransit">0</b></span>
-            <span class="badge dim">その他: <b id="todayOtherCL">0</b></span>
-          </div>
-          <div class="flex mt12">
-            <button id="closeToday" class="btn secondary">今日を締める</button>
-            <button id="openToday" class="btn ghost">締め解除</button>
-          </div>
-          <div class="muted mt8">日付: <span id="todayLabel"></span></div>
-        </div>
-        <div class="card" style="flex:1">
-          <div class="muted">来店回数</div>
-          <div class="flex mt8">
-            <button id="decVisit" class="btn secondary">−</button>
-            <div style="font-size:28px;font-weight:700;min-width:72px;text-align:center" id="visitCount">0</div>
-            <button id="incVisit" class="btn">＋</button>
-          </div>
-          <div class="muted mt8">（0未満にはなりません）</div>
-        </div>
-      </div>
-
-      <div class="card mt8">
-        <h3>日付指定で見る / 比べる</h3>
-        <div class="grid2 mt8">
-          <div>
-            <label>日付A</label>
-            <input type="date" id="cmpDateA">
-            <div class="mt8">合計：<strong id="cmpSumA">0</strong> 円（<span id="cmpCntA">0</span> 件）</div>
-            <div class="badges mt8">
-              <span class="badge">現金: <b id="cmpCashA">0</b></span>
-              <span class="badge">カード: <b id="cmpCardA">0</b></span>
-              <span class="badge">CL合計: <b id="cmpCLA">0</b></span>
-            </div>
-            <div class="mt8" style="max-height:160px;overflow:auto">
-              <table id="cmpTableA"><thead><tr><th>時刻</th><th>メモ</th><th class="right">合計</th></tr></thead><tbody></tbody></table>
-            </div>
-          </div>
-          <div>
-            <label>日付B</label>
-            <input type="date" id="cmpDateB">
-            <div class="mt8">合計：<strong id="cmpSumB">0</strong> 円（<span id="cmpCntB">0</span> 件）</div>
-            <div class="badges mt8">
-              <span class="badge">現金: <b id="cmpCashB">0</b></span>
-              <span class="badge">カード: <b id="cmpCardB">0</b></span>
-              <span class="badge">CL合計: <b id="cmpCLB">0</b></span>
-            </div>
-            <div class="mt8" style="max-height:160px;overflow:auto">
-              <table id="cmpTableB"><thead><tr><th>時刻</th><th>メモ</th><th class="right">合計</th></tr></thead><tbody></tbody></table>
-            </div>
-          </div>
-        </div>
-        <div class="mt12">
-          <span class="muted">差分（A − B）：</span>
-          <span id="cmpDiff" class="diff-pos">0 円</span>
-        </div>
-      </div>
-
-      <div class="card mt8">
-        <div class="flex">
-          <div class="muted">日別サマリー（直近30日）</div>
-          <span class="pill" id="summaryCount">0 日</span>
-        </div>
-        <div class="mt12" style="max-height:300px;overflow:auto">
-          <table id="summaryTable">
-            <thead><tr><th>日付</th><th class="right">合計</th><th class="right">現金</th><th class="right">カード</th><th class="right">CL</th><th>締め</th><th class="right">件数</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+    <section id="home">
+      <h2>ホーム</h2>
+      <div>今日の売上: <span id="todayTotal">0</span> 円</div>
+      <div>現金: <span id="todayCash">0</span> / カード: <span id="todayCard">0</span> / CL合計: <span id="todayCL">0</span></div>
+      <div>来店回数: <button id="decVisit">−</button> <span id="visitCount">0</span> <button id="incVisit">＋</button></div>
+      <button id="closeToday" class="btn">今日を締める</button> <span id="todayClosed" class="hidden">締め済</span>
+      <h3>日別サマリー</h3>
+      <table id="summaryTable"><thead><tr><th>日付</th><th>合計</th><th>現金</th><th>カード</th><th>CL</th><th>件数</th><th>締め</th></tr></thead><tbody></tbody></table>
     </section>
-
-    <section id="sales" class="card hidden">
+    <section id="sales" class="hidden">
       <h2>売上入力</h2>
-      <div class="row">
-        <div class="col">
-          <label>日付</label>
-          <input type="date" id="saleDate" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <label>現金（円）</label>
-          <input type="number" id="cash" placeholder="例）8000" inputmode="numeric" />
-        </div>
-        <div class="col">
-          <label>カード（円）</label>
-          <input type="number" id="card" placeholder="例）3000" inputmode="numeric" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <label>CL - PayPay（円）</label>
-          <input type="number" id="cl_paypay" placeholder="例）2000" inputmode="numeric" />
-        </div>
-        <div class="col">
-          <label>CL - 交通系（円）</label>
-          <input type="number" id="cl_transit" placeholder="例）1000" inputmode="numeric" />
-        </div>
-        <div class="col">
-          <label>CL - その他（円）</label>
-          <input type="number" id="cl_other" placeholder="例）500" inputmode="numeric" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <label>メモ</label>
-          <input id="saleNote" placeholder="例）ランチ15名 / テイクアウト3件" />
-        </div>
-      </div>
-      <div class="flex mt12">
-        <button class="btn" id="saveSale">保存</button>
-        <button class="btn secondary" id="exportSales">CSVで保存</button>
-        <input type="file" id="importSalesFile" accept=".csv" class="hidden" />
-        <button class="btn ghost" id="importSalesBtn">CSVを読み込む</button>
-      </div>
-
-      <div class="card mt16">
-        <div class="flex">
-          <div class="muted">売上一覧（新しい順）</div>
-          <span class="pill" id="allSalesCount">0 件</span>
-        </div>
-        <div class="mt12" style="max-height:360px;overflow:auto">
-          <table id="salesTable">
-            <thead><tr><th>日付</th><th>メモ</th><th>内訳</th><th class="right">合計</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+      <label>日付 <input type="date" id="saleDate"></label><br>
+      <label>現金 <input type="number" id="cash"></label>
+      <label>カード <input type="number" id="card"></label><br>
+      <label>CL-PayPay <input type="number" id="cl_paypay"></label>
+      <label>CL-交通系 <input type="number" id="cl_transit"></label>
+      <label>CL-その他 <input type="number" id="cl_other"></label><br>
+      <label>メモ <input id="saleNote"></label><br>
+      <button id="saveSale" class="btn primary">保存</button>
+      <button id="exportSales" class="btn">CSVで保存</button>
+      <input type="file" id="importSalesFile" class="hidden">
+      <button id="importSalesBtn" class="btn">CSVを読み込む</button>
+      <h3>売上一覧</h3>
+      <table id="salesTable"><thead><tr><th>日付</th><th>メモ</th><th>内訳</th><th>合計</th><th></th></tr></thead><tbody></tbody></table>
     </section>
-
-    <section id="customers" class="card hidden">
+    <section id="customers" class="hidden">
       <h2>顧客台帳</h2>
-      <div class="row">
-        <div class="col">
-          <label>名前</label>
-          <input id="custName" placeholder="山田 太郎" />
-        </div>
-        <div class="col">
-          <label>連絡先</label>
-          <input id="custContact" placeholder="090-xxxx-xxxx / LINE ID" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <label>メモ</label>
-          <input id="custMemo" placeholder="アレルギー：エビ / 好み：辛口" />
-        </div>
-      </div>
-      <div class="flex mt12">
-        <button class="btn" id="saveCustomer">保存</button>
-        <button class="btn secondary" id="exportCustomers">CSVで保存</button>
-        <input type="file" id="importCustFile" accept=".csv" class="hidden" />
-        <button class="btn ghost" id="importCustBtn">CSVを読み込む</button>
-      </div>
-
-      <div class="card mt16">
-        <div class="flex">
-          <div class="muted">顧客一覧（新しい順）</div>
-          <span class="pill" id="custCount">0 件</span>
-        </div>
-        <div class="mt12" style="max-height:300px;overflow:auto">
-          <table id="custTable">
-            <thead><tr><th>名前</th><th>連絡先</th><th>メモ</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+      <label>名前 <input id="custName"></label>
+      <label>連絡先 <input id="custContact"></label>
+      <label>メモ <input id="custMemo"></label><br>
+      <button id="saveCustomer" class="btn primary">保存</button>
+      <button id="exportCustomers" class="btn">CSVで保存</button>
+      <input type="file" id="importCustFile" class="hidden">
+      <button id="importCustBtn" class="btn">CSVを読み込む</button>
+      <h3>顧客一覧</h3>
+      <table id="custTable"><thead><tr><th>名前</th><th>連絡先</th><th>メモ</th><th></th></tr></thead><tbody></tbody></table>
     </section>
-
-    <section id="line" class="card hidden">
+    <section id="line" class="hidden">
       <h2>LINE配信（ダミー）</h2>
-      <p class="muted">このモックでは、配信ボタンを押すとダイアログが出るだけです。</p>
-      <div class="row">
-        <div class="col">
-          <label>メッセージ</label>
-          <textarea id="lineMsg" placeholder="新メニュー登場！本日限定○○％OFF"></textarea>
-        </div>
-      </div>
-      <button class="btn" id="sendLine">配信する（ダミー）</button>
+      <textarea id="lineMsg"></textarea><br>
+      <button id="sendLine" class="btn primary">配信する</button>
     </section>
-
-    <section id="settings" class="card hidden">
-      <h2>設定 / データ管理</h2>
-      <div class="card">
-        <h3>パスコード</h3>
-        <div class="row">
-          <div class="col">
-            <label>4桁PINを設定</label>
-            <input id="pinSet" maxlength="4" inputmode="numeric" placeholder="****" />
-          </div>
-        </div>
-        <div class="flex mt8">
-          <button class="btn" id="savePin">保存</button>
-          <button class="btn ghost" id="clearPin">解除</button>
-        </div>
-        <p class="muted mt8">※ 次回ページを開いたときにPINの入力が必要になります。</p>
-      </div>
-
-      <div class="card">
-        <h3>データのリセット</h3>
-        <div class="flex">
-          <button class="btn danger" id="resetData">すべてのデータを削除</button>
-          <span class="muted">（売上・顧客・来店回数・締め情報・PINも含む）</span>
-        </div>
-      </div>
+    <section id="settings" class="hidden">
+      <h2>設定</h2>
+      <label>PIN <input id="pinSet" maxlength="4"></label>
+      <button id="savePin" class="btn">保存</button>
+      <button id="clearPin" class="btn">解除</button><br>
+      <button id="resetData" class="btn">すべて削除</button>
     </section>
-
-    <footer>© MVP Mock – ローカル保存（ブラウザ内）</footer>
   </main>
-
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const $ = s => document.querySelector(s);
-    const $$ = s => document.querySelectorAll(s);
-    const todayStr = () => { const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; };
-    const fmt = n => Number(n||0).toLocaleString();
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
-    const SALES_KEY='sales', CUST_KEY='customers', VISIT_KEY='visit_count', CLOSED_KEY='closed_dates', PIN_KEY='pin4';
-
-    // PIN
-    const pin = localStorage.getItem(PIN_KEY);
-    let unlocked = !pin;
-    const overlay = $('#lockOverlay');
-    if (!unlocked) {
-      overlay.style.display='flex';
-      $('#pinEnter').addEventListener('click', ()=>{
-        const v = $('#pinInput').value.trim();
-        if (v === pin) { unlocked=true; overlay.style.display='none'; }
-        else { $('#pinMsg').textContent='パスコードが違います'; }
-      });
-    }
-
-    function showTab(tab){
-      if(!unlocked) return;
-      $$('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-      ['home','sales','customers','line','settings'].forEach(id=>{
-        const el=document.getElementById(id);
-        if(el) el.classList.toggle('hidden', id!==tab);
-      });
-      if(tab==='home'){ renderToday(); renderCompare(); renderDailySummary(); }
-      if(tab==='sales'){ renderSalesTable(); }
-      if(tab==='customers'){ renderCustTable(); }
-    }
-    $$('nav button').forEach(btn=> btn && btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
-    showTab('home');
-
-    // visits
-    const getVisits = () => Number(localStorage.getItem(VISIT_KEY)||0);
-    const setVisits = v => localStorage.setItem(VISIT_KEY, String(Math.max(0, Number(v)||0)));
-    const renderVisits = () => { const el=$('#visitCount'); if(el) el.textContent=getVisits(); };
-    $('#incVisit')?.addEventListener('click', ()=>{ setVisits(getVisits()+1); renderVisits(); });
-    $('#decVisit')?.addEventListener('click', ()=>{ setVisits(getVisits()-1); renderVisits(); });
-
-    // sales
-    const getSales = () => { try { return JSON.parse(localStorage.getItem(SALES_KEY)||'[]'); } catch { return []; } };
-    const setSales = arr => localStorage.setItem(SALES_KEY, JSON.stringify(arr));
-    const saleDate = $('#saleDate'); if(saleDate) saleDate.value=todayStr();
-
-    function totalOf(r){ return r.amount!=null ? Number(r.amount) : Number(r.cash||0)+Number(r.card||0)+Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0); }
-    function clTotal(r){ return Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0); }
-
-    $('#saveSale')?.addEventListener('click', ()=>{
-      const date=$('#saleDate')?.value||todayStr();
-      const cash=Number($('#cash')?.value||0);
-      const card=Number($('#card')?.value||0);
-      const cpp=Number($('#cl_paypay')?.value||0);
-      const ctr=Number($('#cl_transit')?.value||0);
-      const cot=Number($('#cl_other')?.value||0);
-      const note=$('#saleNote')?.value||'';
-      if((cash+card+cpp+ctr+cot)===0){ alert('いずれかの金額を入力してください'); return; }
-      const at=new Date().toISOString();
-      const list=getSales(); list.push({date,cash,card,cl_paypay:cpp,cl_transit:ctr,cl_other:cot,note,at}); setSales(list);
-      ['#cash','#card','#cl_paypay','#cl_transit','#cl_other','#saleNote'].forEach(sel=>{ const el=$(sel); if(el) el.value=''; });
-      renderSalesTable(); renderToday(); renderCompare(); renderDailySummary();
-      alert('保存しました（ダミー）');
-    });
-
-    function renderSalesTable(){
-      const tbody=$('#salesTable tbody'); if(!tbody) return;
-      tbody.innerHTML='';
-      const arr=getSales(); const list=arr.slice().reverse();
-      $('#allSalesCount')?.textContent=arr.length+' 件';
-      list.forEach((r,idxFromTop)=>{
-        const realIndex=arr.length-1-idxFromTop;
-        const total=totalOf(r);
-        const parts=[];
-        if(r.cash) parts.push(`現金 ${fmt(r.cash)}`);
-        if(r.card) parts.push(`カード ${fmt(r.card)}`);
-        const cl=clTotal(r);
-        if(cl){
-          const sub=[];
-          if(r.cl_paypay) sub.push(`PayPay ${fmt(r.cl_paypay)}`);
-          if(r.cl_transit) sub.push(`交通系 ${fmt(r.cl_transit)}`);
-          if(r.cl_other) sub.push(`その他 ${fmt(r.cl_other)}`);
-          parts.push(`CL ${fmt(cl)}${sub.length?'（'+sub.join(' / ')+'）':''}`);
-        }
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${r.date}</td><td>${escapeHtml(r.note||'')}</td><td>${parts.length?parts.join(' / '):'—'}</td><td class="right">${fmt(total)}</td><td class="right"><button class="btn ghost" data-del="${realIndex}">削除</button></td>`;
-        tbody.appendChild(tr);
-      });
-      tbody.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{
-        const i=Number(btn.getAttribute('data-del')); const arr2=getSales(); arr2.splice(i,1); setSales(arr2);
-        renderSalesTable(); renderToday(); renderCompare(); renderDailySummary();
-      }));
-    }
-
-    function renderToday(){
-      const today=todayStr(); $('#todayLabel')?.textContent=today;
-      const list=getSales().filter(x=>x.date===today);
-      const sums=list.reduce((a,r)=>{
-        a.cash+=Number(r.cash||0); a.card+=Number(r.card||0);
-        a.paypay+=Number(r.cl_paypay||0); a.transit+=Number(r.cl_transit||0); a.other+=Number(r.cl_other||0);
-        const legacy=Number(r.amount||0); a.total+= legacy ? legacy : Number(r.cash||0)+Number(r.card||0)+Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0);
-        return a;
-      },{cash:0,card:0,paypay:0,transit:0,other:0,total:0});
-      $('#todayTotal')?.textContent=fmt(sums.total);
-      $('#todayCash')?.textContent=fmt(sums.cash);
-      $('#todayCard')?.textContent=fmt(sums.card);
-      const cl=sums.paypay+sums.transit+sums.other;
-      $('#todayCL')?.textContent=fmt(cl);
-      $('#todayPayPay')?.textContent=fmt(sums.paypay);
-      $('#todayTransit')?.textContent=fmt(sums.transit);
-      $('#todayOtherCL')?.textContent=fmt(sums.other);
-      const closed=isClosed(today); $('#todayClosed')?.classList.toggle('hidden',!closed);
-      renderVisits();
-    }
-
-    function renderCompare(){
-      const aEl=$('#cmpDateA'), bEl=$('#cmpDateB');
-      const a=aEl?.value||todayStr(), b=bEl?.value||prevDateStr(todayStr());
-      if(aEl&&!aEl.value) aEl.value=a; if(bEl&&!bEl.value) bEl.value=b;
-      const listA=getSales().filter(x=>x.date===a), listB=getSales().filter(x=>x.date===b);
-      const agg=list=>list.reduce((acc,r)=>{ acc.total+=totalOf(r); acc.cash+=Number(r.cash||0); acc.card+=Number(r.card||0); acc.cl+=Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0); return acc; },{total:0,cash:0,card:0,cl:0});
-      const A=agg(listA), B=agg(listB);
-      $('#cmpSumA')?.textContent=fmt(A.total); $('#cmpCntA')?.textContent=listA.length; $('#cmpCashA')?.textContent=fmt(A.cash); $('#cmpCardA')?.textContent=fmt(A.card); $('#cmpCLA')?.textContent=fmt(A.cl);
-      $('#cmpSumB')?.textContent=fmt(B.total); $('#cmpCntB')?.textContent=listB.length; $('#cmpCashB')?.textContent=fmt(B.cash); $('#cmpCardB')?.textContent=fmt(B.card); $('#cmpCLB')?.textContent=fmt(B.cl);
-      fillCmpTable('#cmpTableA tbody',listA); fillCmpTable('#cmpTableB tbody',listB);
-      const diff=A.total-B.total; const diffEl=$('#cmpDiff'); if(diffEl){ diffEl.textContent=`${fmt(diff)} 円`; diffEl.className = diff>=0 ? 'diff-pos' : 'diff-neg'; }
-    }
-    function prevDateStr(iso){ const d=new Date(iso); d.setDate(d.getDate()-1); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; }
-    function fillCmpTable(sel,list){ const tb=document.querySelector(sel); if(!tb) return; tb.innerHTML=''; list.slice().reverse().forEach(r=>{ const time=(r.at||'').split('T')[1]?.slice(0,5)||'--:--'; const total=totalOf(r); const tr=document.createElement('tr'); tr.innerHTML=`<td>${time}</td><td>${escapeHtml(r.note||'')}</td><td class="right">${fmt(total)}</td>`; tb.appendChild(tr); }); }
-    $('#cmpDateA')?.addEventListener('change',renderCompare); $('#cmpDateB')?.addEventListener('change',renderCompare);
-
-    function renderDailySummary(){
-      const byDate={}; getSales().forEach(r=>{ const d=r.date; const total=totalOf(r); byDate[d]=byDate[d]||{sum:0,cash:0,card:0,cl:0,count:0}; byDate[d].sum+=total; byDate[d].cash+=Number(r.cash||0); byDate[d].card+=Number(r.card||0); byDate[d].cl+=Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0); byDate[d].count+=1; });
-      const rows=Object.entries(byDate).map(([date,v])=>({date,...v})).sort((a,b)=>a.date<b.date?1:-1).slice(0,30);
-      $('#summaryCount')?.textContent=`${rows.length} 日`;
-      const tb=$('#summaryTable tbody'); if(!tb) return; tb.innerHTML=''; rows.forEach(r=>{ const tr=document.createElement('tr'); const closed=isClosed(r.date); tr.innerHTML=`<td>${r.date}</td><td class="right">${fmt(r.sum)}</td><td class="right">${fmt(r.cash)}</td><td class="right">${fmt(r.card)}</td><td class="right">${fmt(r.cl)}</td><td>${closed?'✅':''}</td><td class="right">${r.count}</td>`; tb.appendChild(tr); });
-    }
-
-    function getClosed(){ try{ return JSON.parse(localStorage.getItem(CLOSED_KEY)||'{}'); }catch{ return {}; } }
-    function setClosed(obj){ localStorage.setItem(CLOSED_KEY, JSON.stringify(obj)); }
-    function isClosed(date){ const obj=getClosed(); return !!obj[date]; }
-    $('#closeToday')?.addEventListener('click', ()=>{ const d=todayStr(); const obj=getClosed(); obj[d]=true; setClosed(obj); renderToday(); renderDailySummary(); });
-    $('#openToday')?.addEventListener('click', ()=>{ const d=todayStr(); const obj=getClosed(); delete obj[d]; setClosed(obj); renderToday(); renderDailySummary(); });
-
-    // CSV export/import sales
-    $('#exportSales')?.addEventListener('click', ()=>{
-      const rows=[['date','cash','card','cl_paypay','cl_transit','cl_other','amount_total','note','at'], ...getSales().map(r=>{ const total=totalOf(r); return [r.date,r.cash||0,r.card||0,r.cl_paypay||0,r.cl_transit||0,r.cl_other||0,total,(r.note||'').replace(/\n/g,' '),r.at||'']; })];
-      downloadCSV('sales.csv', rows);
-    });
-    $('#importSalesBtn')?.addEventListener('click', ()=> $('#importSalesFile')?.click());
-    $('#importSalesFile')?.addEventListener('change', (e)=>{
-      const file=e.target.files?.[0]; if(!file) return;
-      const reader=new FileReader();
-      reader.onload=()=>{
-        const text=String(reader.result||''); const rows=parseCSV(text); const header=rows.shift()?.map(h=>h.trim().toLowerCase())||[]; const idx=name=>header.indexOf(name);
-        const list=getSales();
-        rows.forEach(cols=>{
-          const rec={}; rec.date=cols[idx('date')]||todayStr();
-          const cash=Number(cols[idx('cash')]||0), card=Number(cols[idx('card')]||0);
-          const cpp=Number(cols[idx('cl_paypay')]||cols[idx('paypay')]||0);
-          const ctr=Number(cols[idx('cl_transit')]||cols[idx('transit')]||0);
-          const cot=Number(cols[idx('cl_other')]||cols[idx('other')]||0);
-          const amt=Number(cols[idx('amount_total')]||cols[idx('amount')]||0);
-          rec.cash=cash; rec.card=card; rec.cl_paypay=cpp; rec.cl_transit=ctr; rec.cl_other=cot;
-          rec.note=cols[idx('note')]||''; rec.at=cols[idx('at')]||new Date().toISOString();
-          if((cash+card+cpp+ctr+cot)===0 && amt>0) rec.amount=amt;
-          list.push(rec);
-        });
-        setSales(list); renderSalesTable(); renderToday(); renderCompare(); renderDailySummary(); alert('インポートしました'); e.target.value='';
-      };
-      reader.readAsText(file);
-    });
-
-    // customers
-    const getCust = () => { try{ return JSON.parse(localStorage.getItem(CUST_KEY)||'[]'); } catch { return []; } };
-    const setCust = arr => localStorage.setItem(CUST_KEY, JSON.stringify(arr));
-    $('#saveCustomer')?.addEventListener('click', ()=>{
-      const name=$('#custName')?.value.trim(); if(!name){ alert('名前を入力してください'); return; }
-      const contact=$('#custContact')?.value.trim()||''; const memo=$('#custMemo')?.value.trim()||''; const at=new Date().toISOString();
-      const list=getCust(); list.push({name,contact,memo,at}); setCust(list); ['#custName','#custContact','#custMemo'].forEach(sel=>{ const el=$(sel); if(el) el.value=''; }); renderCustTable(); alert('保存しました（ダミー）');
-    });
-    function renderCustTable(){
-      const tbody=$('#custTable tbody'); if(!tbody) return; tbody.innerHTML=''; const list=getCust().slice().reverse();
-      $('#custCount')?.textContent=list.length+' 件';
-      list.forEach((r,idxFromTop)=>{
-        const realIndex=getCust().length-1-idxFromTop;
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.contact||'')}</td><td>${escapeHtml(r.memo||'')}</td><td class="right"><button class="btn ghost" data-delc="${realIndex}">削除</button></td>`;
-        tbody.appendChild(tr);
-      });
-      tbody.querySelectorAll('[data-delc]').forEach(btn=>btn.addEventListener('click',()=>{
-        const i=Number(btn.getAttribute('data-delc')); const arr=getCust(); arr.splice(i,1); setCust(arr); renderCustTable();
-      }));
-    }
-
-    // export/import customers
-    $('#exportCustomers')?.addEventListener('click', ()=>{
-      const rows=[['name','contact','memo','at'], ...getCust().map(r=>[r.name,r.contact||'',(r.memo||'').replace(/\n/g,' '),r.at||''])];
-      downloadCSV('customers.csv', rows);
-    });
-    $('#importCustBtn')?.addEventListener('click', ()=> $('#importCustFile')?.click());
-    $('#importCustFile')?.addEventListener('change', (e)=>{
-      const file=e.target.files?.[0]; if(!file) return; const reader=new FileReader();
-      reader.onload=()=>{
-        const text=String(reader.result||''); const rows=parseCSV(text); const header=rows.shift()?.map(h=>h.trim().toLowerCase())||[]; const idx=name=>header.indexOf(name);
-        const list=getCust();
-        rows.forEach(cols=>{
-          const name=cols[idx('name')]?.trim(); if(!name) return;
-          const contact=cols[idx('contact')]||''; const memo=cols[idx('memo')]||''; const at=cols[idx('at')]||new Date().toISOString();
-          list.push({name,contact,memo,at});
-        });
-        setCust(list); renderCustTable(); alert('インポートしました'); e.target.value='';
-      };
-      reader.readAsText(file);
-    });
-
-    // settings PIN & reset
-    $('#savePin')?.addEventListener('click', ()=>{ const v=($('#pinSet')?.value||'').trim(); if(!/^[0-9]{4}$/.test(v)){ alert('4桁の数字を入力してください'); return; } localStorage.setItem(PIN_KEY, v); alert('PINを保存しました。次回から必要です。'); });
-    $('#clearPin')?.addEventListener('click', ()=>{ localStorage.removeItem(PIN_KEY); alert('PINを解除しました'); });
-    $('#resetData')?.addEventListener('click', ()=>{
-      if(confirm('本当に端末内のデータを全消去しますか？（売上/顧客/来店回数/締め/PIN）')){
-        localStorage.removeItem(SALES_KEY); localStorage.removeItem(CUST_KEY); localStorage.removeItem(VISIT_KEY); localStorage.removeItem(CLOSED_KEY); localStorage.removeItem(PIN_KEY);
-        renderToday(); renderSalesTable(); renderCustTable(); renderCompare(); renderDailySummary(); alert('削除しました');
-      }
-    });
-
-    function downloadCSV(filename, rows){
-      const csv=rows.map(r=>r.map(x=>{ const s=String(x==null?'':x); return (s.includes(',')||s.includes('"')||s.includes('\n')) ? '"'+s.replace(/"/g,'""')+'"' : s; }).join(',')).join('\n');
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
-    }
-    function parseCSV(text){
-      const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(x=>x.length); const rows=[]; let i=0;
-      while(i<lines.length){ const row=[]; let s=lines[i], j=0, cur='', inQ=false;
-        while(j<=s.length){ const ch=s[j];
-          if(inQ){ if(ch==='"'){ if(s[j+1]==='"'){ cur+='"'; j++; } else { inQ=false; } } else { cur+= ch ?? ''; } }
-          else { if(ch==='"'){ inQ=true; } else if(ch===','||ch==null){ row.push(cur); cur=''; if(ch==null) break; } else { cur+=ch; } }
-          j++;
-        }
-        rows.push(row); i++;
-      } return rows;
-    }
-
-    (function init(){
-      const cmpA=$('#cmpDateA'), cmpB=$('#cmpDateB');
-      if(cmpA&&!cmpA.value) cmpA.value=todayStr(); if(cmpB&&!cmpB.value) cmpB.value=(()=>{const d=new Date(); d.setDate(d.getDate()-1); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; })();
-      if(saleDate&&!saleDate.value) saleDate.value=todayStr();
-      renderVisits(); renderToday(); renderCompare(); renderDailySummary(); renderSalesTable(); renderCustTable();
-    })();
-  });
+    document.addEventListener("DOMContentLoaded",()=>{
+      const tabs=document.querySelectorAll("nav button");const sections=document.querySelectorAll("main section");
+      function showTab(id){tabs.forEach(b=>b.classList.toggle("active",b.dataset.tab===id));sections.forEach(s=>s.classList.toggle("hidden",s.id!==id));}
+      tabs.forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+      showTab("home");
+      const fmt=n=>Number(n||0).toLocaleString();const todayStr=()=>{const d=new Date();const m=String(d.getMonth()+1).padStart(2,'0');const da=String(d.getDate()).padStart(2,'0');return d.getFullYear()+"-"+m+"-"+da;};
+      const SALES_KEY='sales',CUST_KEY='cust',VISIT_KEY='visits',PIN_KEY='pin',CLOSE_KEY='closed';
+      const getSales=()=>JSON.parse(localStorage.getItem(SALES_KEY)||'[]');const setSales=v=>localStorage.setItem(SALES_KEY,JSON.stringify(v));
+      const getCust=()=>JSON.parse(localStorage.getItem(CUST_KEY)||'[]');const setCust=v=>localStorage.setItem(CUST_KEY,JSON.stringify(v));
+      const getVisits=()=>Number(localStorage.getItem(VISIT_KEY)||0);const setVisits=v=>localStorage.setItem(VISIT_KEY,String(Math.max(0,v)));
+      const getClosed=()=>JSON.parse(localStorage.getItem(CLOSE_KEY)||'{}');const setClosed=o=>localStorage.setItem(CLOSE_KEY,JSON.stringify(o));
+      function renderToday(){const today=todayStr();const list=getSales().filter(x=>x.date===today);let sum=0,c=0,ca=0,cl=0;list.forEach(r=>{sum+=Number(r.cash||0)+Number(r.card||0)+Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0);c+=Number(r.cash||0);ca+=Number(r.card||0);cl+=Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0);});document.getElementById("todayTotal").textContent=fmt(sum);document.getElementById("todayCash").textContent=fmt(c);document.getElementById(...
   </script>
 </body>
 </html>
