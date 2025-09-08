@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>飲食店MVPモック</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif; margin: 0; background:#f7f7f7; }
+  header { background:#111; color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; position: sticky; top:0; }
+  header h1 { margin:0; font-size:16px; }
+  .tabs { display:flex; gap:8px; }
+  .tab { background:#333; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
+  .tab.active { background:#06c; }
+  main { padding:16px; max-width:900px; margin: 0 auto; }
+  .card { background:#fff; border-radius:10px; padding:14px; margin:12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .sec-title { font-weight:700; margin:0 0 8px 0; }
+  label { display:block; margin:8px 0 4px; font-size: 14px; }
+  input[type="text"], input[type="date"], input[type="number"], textarea, select {
+    width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff;
+  }
+  textarea { min-height:70px; }
+  .row { display:flex; gap:10px; flex-wrap: wrap; }
+  .row > div { flex:1; min-width: 160px; }
+  button.primary { background:#06c; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
+  button.secondary { background:#eee; color:#111; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; }
+  .muted { color:#666; font-size:12px; }
+  .pill { background:#eef5ff; color:#06c; font-weight:700; padding:4px 8px; border-radius:999px; font-size:12px; display:inline-block; min-width:56px; text-align:center;}
+  .space { height:8px; }
+  .right { text-align:right; }
+  .footer { color:#777; font-size:12px; margin-top:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>飲食店MVPモック</h1>
+  <div class="tabs">
+    <button class="tab active" data-tab="home">ホーム</button>
+    <button class="tab" data-tab="sales">売上</button>
+    <button class="tab" data-tab="customers">顧客</button>
+    <button class="tab" data-tab="line">LINE配信</button>
+  </div>
+</header>
+<main>
+  <!-- HOME -->
+  <section id="home" class="tabpane">
+    <div class="card">
+      <div class="sec-title">今日の売上（合計）</div>
+      <div class="row">
+        <div>現金<br><span id="home-cash" class="pill">¥0</span></div>
+        <div>カード<br><span id="home-card" class="pill">¥0</span></div>
+        <div>CL（ツケ等）<br><span id="home-cl" class="pill">¥0</span></div>
+      </div>
+      <div class="space"></div>
+      <button class="primary" onclick="goTab('sales')">＋ 売上を入力</button>
+      <button class="secondary" onclick="exportCSV()">CSV出力（マネフォ）</button>
+      <div class="footer">※ CSVは「日次まとめ」の形式です。マネーフォワードの振替伝票インポートで読み込みできます。</div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">来店状況</div>
+      <div class="row">
+        <div>新規<br><span id="home-new" class="pill">0 人</span></div>
+        <div>リピート<br><span id="home-repeat" class="pill">0 人</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">今日の自動配信</div>
+      <div id="home-auto-msg" class="muted">明日 9:30「ありがとうございました！（次回100円OFF）」を配信予定</div>
+    </div>
+  </section>
+
+  <!-- SALES -->
+  <section id="sales" class="tabpane" style="display:none;">
+    <div class="card">
+      <div class="sec-title">日次売上の入力</div>
+      <div class="row">
+        <div>
+          <label>日付</label>
+          <input type="date" id="sales-date">
+        </div>
+        <div>
+          <label>客数</label>
+          <input type="number" id="sales-guests" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>現金</label>
+          <input type="number" id="sales-cash" min="0" placeholder="0">
+        </div>
+        <div>
+          <label>カード</label>
+          <input type="number" id="sales-card" min="0" placeholder="0">
+        </div>
+        <div>
+          <label>CL（ツケ等）</label>
+          <input type="number" id="sales-cl" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="space"></div>
+      <button class="primary" onclick="saveSales()">保存する</button>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">日別一覧</div>
+      <table id="sales-table">
+        <thead>
+          <tr>
+            <th>日付</th><th class="right">現金</th><th class="right">カード</th><th class="right">CL</th><th class="right">客数</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CUSTOMERS -->
+  <section id="customers" class="tabpane" style="display:none;">
+    <div class="card">
+      <div class="sec-title">顧客を追加</div>
+      <div class="row">
+        <div>
+          <label>お名前（ニックネーム可）</label>
+          <input type="text" id="cust-name" placeholder="例：田中さん">
+        </div>
+        <div>
+          <label>種別</label>
+          <select id="cust-type">
+            <option value="新規">新規</option>
+            <option value="常連">常連</option>
+            <option value="紹介">紹介</option>
+          </select>
+        </div>
+      </div>
+      <label>メモ</label>
+      <textarea id="cust-memo" placeholder="好み、注意点など"></textarea>
+      <button class="primary" onclick="addCustomer()">追加する</button>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">顧客リスト</div>
+      <table id="cust-table">
+        <thead>
+          <tr><th>名前</th><th>来店回数</th><th>最終来店</th><th>メモ</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="footer">※ 顧客カードをクリックすると来店回数+1（擬似的な来店記録）</div>
+    </div>
+  </section>
+
+  <!-- LINE -->
+  <section id="line" class="tabpane" style="display:none;">
+    <div class="card">
+      <div class="sec-title">自動配信ルール（MVP）</div>
+      <label><input type="checkbox" id="rule-thanks" checked> 来店翌日 9:30「ありがとうございました！次回100円OFF」</label>
+      <div class="space"></div>
+      <button class="primary" onclick="saveLineRules()">保存する</button>
+      <div id="line-save-msg" class="muted"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">手動配信（ダミー）</div>
+      <label>本文</label>
+      <textarea id="line-body" placeholder="例：本日限定で◯◯が半額！"></textarea>
+      <div class="row">
+        <div><button class="secondary" onclick="previewLine()">プレビュー</button></div>
+        <div><button class="primary" onclick="sendLine()">配信（ダミー）</button></div>
+      </div>
+      <div id="line-preview" class="muted"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const S = {
+  get(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch(e){ return fallback; } },
+  set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+};
+function goTab(name){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabpane').forEach(p=>p.style.display='none');
+  document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+  document.getElementById(name).style.display='block';
+  if(name==='home') refreshHome();
+  if(name==='sales') refreshSalesTable();
+  if(name==='customers') refreshCustomers();
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click', ()=>goTab(b.dataset.tab)));
+
+function saveSales(){
+  const d = document.getElementById('sales-date').value || new Date().toISOString().slice(0,10);
+  const cash = Number(document.getElementById('sales-cash').value||0);
+  const card = Number(document.getElementById('sales-card').value||0);
+  const cl = Number(document.getElementById('sales-cl').value||0);
+  const guests = Number(document.getElementById('sales-guests').value||0);
+  const sales = S.get('sales', {});
+  sales[d] = {cash, card, cl, guests};
+  S.set('sales', sales);
+  refreshSalesTable();
+  refreshHome();
+  alert('保存しました');
+}
+function refreshSalesTable(){
+  const tbody = document.querySelector('#sales-table tbody');
+  tbody.innerHTML='';
+  const sales = S.get('sales', {});
+  const days = Object.keys(sales).sort().reverse();
+  days.forEach(d=>{
+    const {cash, card, cl, guests} = sales[d];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${d}</td>
+      <td class="right">¥${(cash||0).toLocaleString()}</td>
+      <td class="right">¥${(card||0).toLocaleString()}</td>
+      <td class="right">¥${(cl||0).toLocaleString()}</td>
+      <td class="right">${guests||0}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function refreshHome(){
+  const sales = S.get('sales', {});
+  const t = sales[todayStr()] || {cash:0, card:0, cl:0};
+  document.getElementById('home-cash').textContent = '¥'+(t.cash||0).toLocaleString();
+  document.getElementById('home-card').textContent = '¥'+(t.card||0).toLocaleString();
+  document.getElementById('home-cl').textContent = '¥'+(t.cl||0).toLocaleString();
+  const customers = S.get('customers', []);
+  const today = todayStr();
+  let nNew=0, nRep=0;
+  customers.forEach(c=>{
+    if(c.lastVisit===today) (c.visits<=1? nNew++: nRep++);
+  });
+  document.getElementById('home-new').textContent = nNew+' 人';
+  document.getElementById('home-repeat').textContent = nRep+' 人';
+}
+function addCustomer(){
+  const name = document.getElementById('cust-name').value.trim();
+  const type = document.getElementById('cust-type').value;
+  const memo = document.getElementById('cust-memo').value.trim();
+  if(!name){ alert('お名前を入れてください'); return; }
+  const customers = S.get('customers', []);
+  customers.push({name, type, memo, visits:1, lastVisit: todayStr()});
+  S.set('customers', customers);
+  document.getElementById('cust-name').value='';
+  document.getElementById('cust-memo').value='';
+  refreshCustomers();
+  refreshHome();
+}
+function refreshCustomers(){
+  const tbody = document.querySelector('#cust-table tbody');
+  tbody.innerHTML='';
+  const customers = S.get('customers', []);
+  customers.sort((a,b)=> (b.visits||0)-(a.visits||0));
+  customers.forEach((c, idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.name}</td><td>${c.visits||0}</td><td>${c.lastVisit||'-'}</td><td>${c.memo||''}</td>`;
+    tr.style.cursor='pointer';
+    tr.title='クリックで来店回数+1（擬似）';
+    tr.addEventListener('click', ()=>{
+      c.visits=(c.visits||0)+1; c.lastVisit=todayStr();
+      customers[idx]=c; S.set('customers', customers);
+      refreshCustomers(); refreshHome();
+    });
+    tbody.appendChild(tr);
+  });
+}
+function saveLineRules(){
+  const rule = document.getElementById('rule-thanks').checked;
+  S.set('line_rules', {thanks: rule});
+  const msg = document.getElementById('line-save-msg');
+  msg.textContent = '保存しました。';
+  setTimeout(()=>msg.textContent='', 1500);
+}
+function previewLine(){
+  const body = document.getElementById('line-body').value.trim() || '（本文未入力）';
+  document.getElementById('line-preview').textContent = 'プレビュー：' + body;
+}
+function sendLine(){
+  alert('ダミー送信：このモックでは実際の配信は行いません。');
+}
+function exportCSV(){
+  const sales = S.get('sales', {});
+  const header = ['date','cash','card','cl','guests'];
+  let csv = header.join(',') + '\n';
+  Object.keys(sales).sort().forEach(d=>{
+    const {cash=0, card=0, cl=0, guests=0} = sales[d];
+    csv += [d, cash, card, cl, guests].join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'daily_sales_for_moneyforward.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+(function init(){
+  document.getElementById('sales-date').value = todayStr();
+  refreshHome(); refreshSalesTable(); refreshCustomers();
+})();
+</script>
+</body>
+</html>
