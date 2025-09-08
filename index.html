@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>飲食店 MVP モック v2.1</title>
+  <title>飲食店 MVP モック v2.2</title>
   <style>
     :root { --primary:#0a7cff; --bg:#f7f7f9; --card:#fff; --text:#222; --muted:#777; }
     *{box-sizing:border-box}
@@ -13,7 +13,7 @@
     nav{display:flex;gap:8px;padding:8px 12px 12px;flex-wrap:wrap}
     nav button{flex:1;min-width:120px;padding:10px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
     nav button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-    main{padding:16px;max-width:980px;margin:0 auto}
+    main{padding:16px;max-width:1000px;margin:0 auto}
     .card{background:var(--card);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:16px;margin-bottom:16px}
     .row{display:flex;gap:12px;flex-wrap:wrap}
     label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
@@ -25,7 +25,7 @@
     .btn.danger{background:#ff4d4f}
     .btn.ghost{background:transparent;color:var(--primary);border:1px solid var(--primary)}
     table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
     th{background:#fafafa;position:sticky;top:0}
     .right{text-align:right}
     .muted{color:var(--muted)}
@@ -38,11 +38,13 @@
     @media(max-width:640px){.grid2{grid-template-columns:1fr}}
     .diff-pos{color:#0a7c2a;font-weight:700}
     .diff-neg{color:#b00020;font-weight:700}
+    .badges{display:flex;gap:6px;flex-wrap:wrap;color:#333}
+    .badge{padding:2px 6px;border-radius:6px;background:#f1f5ff;font-size:12px;border:1px solid #dfe6ff}
   </style>
 </head>
 <body>
   <header>
-    <h1>飲食店 MVP モック v2.1</h1>
+    <h1>飲食店 MVP モック v2.2</h1>
     <nav>
       <button data-tab="home" class="active">ホーム</button>
       <button data-tab="sales">売上入力</button>
@@ -57,8 +59,13 @@
       <h2>今日のダッシュボード</h2>
       <div class="row mt8">
         <div class="card" style="flex:1">
-          <div class="muted">本日の売上</div>
+          <div class="muted">本日の売上（合計）</div>
           <div style="font-size:28px;font-weight:700"><span id="todayTotal">0</span> 円</div>
+          <div class="badges mt8">
+            <span class="badge">現金: <b id="todayCash">0</b> 円</span>
+            <span class="badge">カード: <b id="todayCard">0</b> 円</span>
+            <span class="badge">CL: <b id="todayCL">0</b> 円</span>
+          </div>
           <div class="muted mt8">日付: <span id="todayLabel"></span></div>
         </div>
         <div class="card" style="flex:1">
@@ -79,16 +86,26 @@
             <label>日付A</label>
             <input type="date" id="cmpDateA">
             <div class="mt8">合計：<strong id="cmpSumA">0</strong> 円（<span id="cmpCntA">0</span> 件）</div>
+            <div class="badges mt8">
+              <span class="badge">現金: <b id="cmpCashA">0</b></span>
+              <span class="badge">カード: <b id="cmpCardA">0</b></span>
+              <span class="badge">CL: <b id="cmpCLA">0</b></span>
+            </div>
             <div class="mt8" style="max-height:160px;overflow:auto">
-              <table id="cmpTableA"><thead><tr><th>時刻</th><th>メモ</th><th class="right">金額</th></tr></thead><tbody></tbody></table>
+              <table id="cmpTableA"><thead><tr><th>時刻</th><th>メモ</th><th class="right">合計</th></tr></thead><tbody></tbody></table>
             </div>
           </div>
           <div>
             <label>日付B</label>
             <input type="date" id="cmpDateB">
             <div class="mt8">合計：<strong id="cmpSumB">0</strong> 円（<span id="cmpCntB">0</span> 件）</div>
+            <div class="badges mt8">
+              <span class="badge">現金: <b id="cmpCashB">0</b></span>
+              <span class="badge">カード: <b id="cmpCardB">0</b></span>
+              <span class="badge">CL: <b id="cmpCLB">0</b></span>
+            </div>
             <div class="mt8" style="max-height:160px;overflow:auto">
-              <table id="cmpTableB"><thead><tr><th>時刻</th><th>メモ</th><th class="right">金額</th></tr></thead><tbody></tbody></table>
+              <table id="cmpTableB"><thead><tr><th>時刻</th><th>メモ</th><th class="right">合計</th></tr></thead><tbody></tbody></table>
             </div>
           </div>
         </div>
@@ -105,7 +122,7 @@
         </div>
         <div class="mt12" style="max-height:300px;overflow:auto">
           <table id="summaryTable">
-            <thead><tr><th>日付</th><th class="right">合計</th><th class="right">件数</th></tr></thead>
+            <thead><tr><th>日付</th><th class="right">合計</th><th class="right">現金</th><th class="right">カード</th><th class="right">CL</th><th class="right">件数</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -120,9 +137,19 @@
           <label>日付</label>
           <input type="date" id="saleDate" />
         </div>
+      </div>
+      <div class="row">
         <div class="col">
-          <label>金額（円）</label>
-          <input type="number" id="saleAmount" placeholder="例）12000" inputmode="numeric" />
+          <label>現金（円）</label>
+          <input type="number" id="cash" placeholder="例）8000" inputmode="numeric" />
+        </div>
+        <div class="col">
+          <label>カード（円）</label>
+          <input type="number" id="card" placeholder="例）3000" inputmode="numeric" />
+        </div>
+        <div class="col">
+          <label>CL（キャッシュレス他）（円）</label>
+          <input type="number" id="cl" placeholder="例）2000" inputmode="numeric" />
         </div>
       </div>
       <div class="row">
@@ -141,9 +168,9 @@
           <div class="muted">売上一覧（新しい順）</div>
           <span class="pill" id="allSalesCount">0 件</span>
         </div>
-        <div class="mt12" style="max-height:300px;overflow:auto">
+        <div class="mt12" style="max-height:360px;overflow:auto">
           <table id="salesTable">
-            <thead><tr><th>日付</th><th>メモ</th><th class="right">金額</th><th></th></tr></thead>
+            <thead><tr><th>日付</th><th>メモ</th><th>内訳</th><th class="right">合計</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -225,13 +252,8 @@
       return `${d.getFullYear()}-${m}-${day}`;
     };
     const fmt = n => Number(n||0).toLocaleString();
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({
-      '&':'&amp;',
-      '<':'&lt;',
-      '>':'&gt;',
-      '"':'&quot;',
-      "'":'&#39;'
-    }[m]));
+    const sumRecord = r => Number(r.amount ?? 0) + Number(r.cash ?? 0) + Number(r.card ?? 0) + Number(r.cl ?? 0);
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#39;'}[m]));
 
     // ---------- タブ切替 ----------
     function showTab(tab){
@@ -264,17 +286,18 @@
     const saleDate = $('#saleDate'); if (saleDate) saleDate.value = todayStr();
     const saveSaleBtn = $('#saveSale');
     if (saveSaleBtn) saveSaleBtn.addEventListener('click', ()=>{
-      const amountEl = $('#saleAmount'), dateEl = $('#saleDate'), noteEl = $('#saleNote');
-      const amount = Number(amountEl?.value || 0);
-      if(!amount){ alert('金額を入力してください'); return; }
-      const date = dateEl?.value || todayStr();
-      const note = noteEl?.value || '';
+      const date = $('#saleDate')?.value || todayStr();
+      const cash = Number($('#cash')?.value || 0);
+      const card = Number($('#card')?.value || 0);
+      const cl   = Number($('#cl')?.value || 0);
+      const note = $('#saleNote')?.value || '';
+      if ((cash + card + cl) === 0) { alert('いずれかの金額を入力してください'); return; }
       const at = new Date().toISOString();
       const list = getSales();
-      list.push({ date, amount, note, at });
+      list.push({ date, cash, card, cl, note, at });
       setSales(list);
-      if(amountEl) amountEl.value='';
-      if(noteEl) noteEl.value='';
+      const clear = id => { const el = $(id); if(el) el.value=''; };
+      clear('#cash'); clear('#card'); clear('#cl'); clear('#saleNote');
       renderSalesTable(); renderToday(); renderCompare(); renderDailySummary();
       alert('保存しました（ダミー）');
     });
@@ -287,8 +310,17 @@
       const cnt = $('#allSalesCount'); if (cnt) cnt.textContent = arr.length + ' 件';
       list.forEach((r, idxFromTop)=>{
         const realIndex = arr.length - 1 - idxFromTop;
+        const total = r.amount != null ? Number(r.amount) : (Number(r.cash||0)+Number(r.card||0)+Number(r.cl||0));
+        const badges = [];
+        if (r.cash) badges.push(`現金 ${fmt(r.cash)}`);
+        if (r.card) badges.push(`カード ${fmt(r.card)}`);
+        if (r.cl)   badges.push(`CL ${fmt(r.cl)}`);
+        const inner = badges.length ? badges.join(' / ') : '—';
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.note||'')}</td><td class="right">${fmt(r.amount)}</td>
+        tr.innerHTML = `<td>${r.date}</td>
+                        <td>${escapeHtml(r.note||'')}</td>
+                        <td>${inner}</td>
+                        <td class="right">${fmt(total)}</td>
                         <td class="right"><button class="btn ghost" data-del="${realIndex}">削除</button></td>`;
         tbody.appendChild(tr);
       });
@@ -303,17 +335,27 @@
       });
     }
 
-    // 今日の合計
+    // 今日の合計と内訳
     function renderToday(){
       const today = todayStr();
       const lab = $('#todayLabel'); if (lab) lab.textContent = today;
       const list = getSales().filter(x => x.date === today);
-      const total = list.reduce((a,b)=>a + Number(b.amount||0), 0);
-      const tot = $('#todayTotal'); if (tot) tot.textContent = fmt(total);
+      const sums = list.reduce((acc, r)=>{
+        acc.cash += Number(r.cash||0);
+        acc.card += Number(r.card||0);
+        acc.cl   += Number(r.cl||0);
+        const legacy = Number(r.amount||0); // 旧データ互換
+        acc.total += legacy ? legacy : (Number(r.cash||0)+Number(r.card||0)+Number(r.cl||0));
+        return acc;
+      }, {cash:0, card:0, cl:0, total:0});
+      const tot = $('#todayTotal'); if (tot) tot.textContent = fmt(sums.total);
+      const c1 = $('#todayCash'); if (c1) c1.textContent = fmt(sums.cash);
+      const c2 = $('#todayCard'); if (c2) c2.textContent = fmt(sums.card);
+      const c3 = $('#todayCL');   if (c3) c3.textContent = fmt(sums.cl);
       renderVisits();
     }
 
-    // A/B 比較
+    // A/B 比較（合計＋内訳）
     function renderCompare(){
       const aEl = $('#cmpDateA'), bEl = $('#cmpDateB');
       const a = aEl?.value || todayStr();
@@ -324,18 +366,33 @@
       const listA = getSales().filter(x=>x.date===a);
       const listB = getSales().filter(x=>x.date===b);
 
-      const sumA = listA.reduce((s,r)=>s+Number(r.amount||0),0);
-      const sumB = listB.reduce((s,r)=>s+Number(r.amount||0),0);
+      const agg = list => list.reduce((acc,r)=>{
+        const total = r.amount != null ? Number(r.amount) : (Number(r.cash||0)+Number(r.card||0)+Number(r.cl||0));
+        acc.total += total;
+        acc.cash  += Number(r.cash||0);
+        acc.card  += Number(r.card||0);
+        acc.cl    += Number(r.cl||0);
+        return acc;
+      }, {total:0,cash:0,card:0,cl:0});
 
-      const sa = $('#cmpSumA'); if (sa) sa.textContent = fmt(sumA);
-      const ca = $('#cmpCntA'); if (ca) ca.textContent = listA.length;
-      const sb = $('#cmpSumB'); if (sb) sb.textContent = fmt(sumB);
-      const cb = $('#cmpCntB'); if (cb) cb.textContent = listB.length;
+      const A = agg(listA), B = agg(listB);
+
+      $('#cmpSumA')?.textContent = fmt(A.total);
+      $('#cmpCntA')?.textContent = listA.length;
+      $('#cmpCashA')?.textContent = fmt(A.cash);
+      $('#cmpCardA')?.textContent = fmt(A.card);
+      $('#cmpCLA')?.textContent   = fmt(A.cl);
+
+      $('#cmpSumB')?.textContent = fmt(B.total);
+      $('#cmpCntB')?.textContent = listB.length;
+      $('#cmpCashB')?.textContent = fmt(B.cash);
+      $('#cmpCardB')?.textContent = fmt(B.card);
+      $('#cmpCLB')?.textContent   = fmt(B.cl);
 
       fillCmpTable('#cmpTableA tbody', listA);
       fillCmpTable('#cmpTableB tbody', listB);
 
-      const diff = sumA - sumB;
+      const diff = A.total - B.total;
       const diffEl = $('#cmpDiff');
       if (diffEl) {
         diffEl.textContent = `${fmt(diff)} 円`;
@@ -354,41 +411,57 @@
       tb.innerHTML='';
       list.slice().reverse().forEach(r=>{
         const time = (r.at||'').split('T')[1]?.slice(0,5) || '--:--';
+        const total = r.amount != null ? Number(r.amount) : (Number(r.cash||0)+Number(r.card||0)+Number(r.cl||0));
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${time}</td><td>${escapeHtml(r.note||'')}</td><td class="right">${fmt(r.amount)}</td>`;
+        tr.innerHTML = `<td>${time}</td><td>${escapeHtml(r.note||'')}</td><td class="right">${fmt(total)}</td>`;
         tb.appendChild(tr);
       });
     }
     const aDate = $('#cmpDateA'); if (aDate) aDate.addEventListener('change', renderCompare);
     const bDate = $('#cmpDateB'); if (bDate) bDate.addEventListener('change', renderCompare);
 
-    // 日別サマリー（直近30日）
+    // 日別サマリー（直近30日）内訳付き
     function renderDailySummary(){
       const byDate = {};
       getSales().forEach(r=>{
-        byDate[r.date] = byDate[r.date] || {sum:0,count:0};
-        byDate[r.date].sum += Number(r.amount||0);
-        byDate[r.date].count += 1;
+        const d = r.date;
+        const total = r.amount != null ? Number(r.amount) : (Number(r.cash||0)+Number(r.card||0)+Number(r.cl||0));
+        byDate[d] = byDate[d] || {sum:0,cash:0,card:0,cl:0,count:0};
+        byDate[d].sum  += total;
+        byDate[d].cash += Number(r.cash||0);
+        byDate[d].card += Number(r.card||0);
+        byDate[d].cl   += Number(r.cl||0);
+        byDate[d].count += 1;
       });
       const rows = Object.entries(byDate)
         .map(([date, v]) => ({date, ...v}))
         .sort((a,b)=> a.date < b.date ? 1 : -1)
         .slice(0, 30);
 
-      const sc = $('#summaryCount'); if (sc) sc.textContent = `${rows.length} 日`;
+      $('#summaryCount')?.textContent = `${rows.length} 日`;
       const tb = $('#summaryTable tbody'); if(!tb) return;
       tb.innerHTML='';
       rows.forEach(r=>{
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.date}</td><td class="right">${fmt(r.sum)}</td><td class="right">${r.count}</td>`;
+        tr.innerHTML = `<td>${r.date}</td>
+                        <td class="right">${fmt(r.sum)}</td>
+                        <td class="right">${fmt(r.cash)}</td>
+                        <td class="right">${fmt(r.card)}</td>
+                        <td class="right">${fmt(r.cl)}</td>
+                        <td class="right">${r.count}</td>`;
         tb.appendChild(tr);
       });
     }
 
-    // エクスポート
+    // エクスポート（内訳付き）
     const exportSalesBtn = $('#exportSales');
     if (exportSalesBtn) exportSalesBtn.addEventListener('click', ()=>{
-      const rows = [['date','amount','note','at'], ...getSales().map(r=>[r.date, r.amount, (r.note||'').replace(/\n/g,' '), r.at||''])];
+      const rows = [['date','cash','card','cl','amount_total','note','at'],
+        ...getSales().map(r=>{
+          const total = r.amount != null ? Number(r.amount) : (Number(r.cash||0)+Number(r.card||0)+Number(r.cl||0));
+          return [r.date, r.cash||0, r.card||0, r.cl||0, total, (r.note||'').replace(/\n/g,' '), r.at||''];
+        })
+      ];
       downloadCSV('sales.csv', rows);
     });
 
@@ -415,7 +488,7 @@
       const tbody = $('#custTable tbody'); if(!tbody) return;
       tbody.innerHTML='';
       const list = getCust().slice().reverse(); // 新しい順
-      const cc = $('#custCount'); if (cc) cc.textContent = list.length + ' 件';
+      $('#custCount')?.textContent = list.length + ' 件';
       list.forEach((r, idxFromTop)=>{
         const realIndex = getCust().length - 1 - idxFromTop;
         const tr = document.createElement('tr');
@@ -482,15 +555,6 @@
       renderSalesTable();
       renderCustTable();
     })();
-
-    // 便利関数
-    function prevDateStr(iso){
-      const d = new Date(iso);
-      d.setDate(d.getDate()-1);
-      const m = String(d.getMonth()+1).padStart(2,'0');
-      const day = String(d.getDate()).padStart(2,'0');
-      return `${d.getFullYear()}-${m}-${day}`;
-    }
   });
   </script>
 </body>
