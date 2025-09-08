@@ -3,27 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>飲食店 MVP モック v2.3.1 Full</title>
+  <title>飲食店 MVP v2.3.1（安定版）</title>
   <style>
-    body { font-family: sans-serif; margin:0; background:#f7f7f9; }
-    header { background:#fff; border-bottom:1px solid #ddd; position:sticky; top:0; z-index:10; }
-    h1 { margin:0; padding:12px 16px; font-size:18px; }
-    nav { display:flex; gap:6px; padding:8px; flex-wrap:wrap; }
-    nav button { flex:1; min-width:100px; padding:8px; border:1px solid #ccc; border-radius:6px; cursor:pointer; background:#fff; }
-    nav button.active { background:#0a7cff; color:#fff; border-color:#0a7cff; }
-    main { padding:16px; max-width:900px; margin:0 auto; }
-    section { background:#fff; padding:16px; border-radius:8px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-    .hidden { display:none; }
-    .btn{padding:6px 12px; border-radius:6px; border:1px solid #ccc; cursor:pointer; margin:2px;}
-    .btn.primary{background:#0a7cff;color:#fff;border-color:#0a7cff;}
-    .right{text-align:right;}
-    table{width:100%;border-collapse:collapse;margin-top:8px;}
-    th,td{border:1px solid #ccc;padding:4px;}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans JP,sans-serif;background:#f7f7f9}
+    header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e5e5;z-index:10}
+    h1{margin:0;padding:12px 16px;font-size:18px}
+    nav{display:flex;gap:6px;padding:8px;flex-wrap:wrap}
+    nav button{flex:1;min-width:110px;padding:10px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer}
+    nav button.active{background:#0a7cff;color:#fff;border-color:#0a7cff}
+    main{max-width:1000px;margin:0 auto;padding:16px}
+    section{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);padding:16px;margin:0 0 16px}
+    .hidden{display:none}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1;min-width:180px}
+    label{display:block;font-size:12px;color:#666;margin:6px 0 4px}
+    input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff}
+    textarea{min-height:90px}
+    .btn{padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer}
+    .btn.primary{background:#0a7cff;color:#fff;border-color:#0a7cff}
+    .btn.danger{background:#ff4d4f;color:#fff;border-color:#ff4d4f}
+    table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+    th,td{border-bottom:1px solid #eee;padding:8px;text-align:left}
+    th{background:#fafafa}
+    .right{text-align:right}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef5ff;font-size:12px}
+    #lock{position:fixed;inset:0;background:rgba(255,255,255,.96);display:none;align-items:center;justify-content:center;z-index:9999}
+    #lockBox{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:20px;width:90%;max-width:360px}
   </style>
 </head>
 <body>
+  <div id="lock">
+    <div id="lockBox">
+      <h3>パスコード（4桁）</h3>
+      <input id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="****" />
+      <div style="margin-top:10px"><button id="pinEnter" class="btn primary">解除</button></div>
+      <div id="pinMsg" style="color:#b00020;margin-top:8px;font-size:13px"></div>
+    </div>
+  </div>
+
   <header>
-    <h1>飲食店 MVP モック v2.3.1 Full</h1>
+    <h1>飲食店 MVP v2.3.1（安定版）</h1>
     <nav>
       <button data-tab="home" class="active">ホーム</button>
       <button data-tab="sales">売上入力</button>
@@ -32,70 +51,363 @@
       <button data-tab="settings">設定</button>
     </nav>
   </header>
+
   <main>
     <section id="home">
-      <h2>ホーム</h2>
-      <div>今日の売上: <span id="todayTotal">0</span> 円</div>
-      <div>現金: <span id="todayCash">0</span> / カード: <span id="todayCard">0</span> / CL合計: <span id="todayCL">0</span></div>
-      <div>来店回数: <button id="decVisit">−</button> <span id="visitCount">0</span> <button id="incVisit">＋</button></div>
-      <button id="closeToday" class="btn">今日を締める</button> <span id="todayClosed" class="hidden">締め済</span>
-      <h3>日別サマリー</h3>
-      <table id="summaryTable"><thead><tr><th>日付</th><th>合計</th><th>現金</th><th>カード</th><th>CL</th><th>件数</th><th>締め</th></tr></thead><tbody></tbody></table>
+      <h2>今日のダッシュボード</h2>
+      <div class="row">
+        <div class="col">
+          <div>本日の合計：<b id="todayTotal">0</b> 円 <span id="todayClosed" class="pill hidden">締め済</span></div>
+          <div style="margin-top:6px">現金：<b id="todayCash">0</b>／カード：<b id="todayCard">0</b>／CL合計：<b id="todayCL">0</b></div>
+          <div style="margin-top:6px;font-size:13px;color:#666">CL内訳：PayPay <b id="todayPayPay">0</b>／交通系 <b id="todayTransit">0</b>／その他 <b id="todayOther">0</b></div>
+          <div style="margin-top:10px">
+            <button id="closeToday" class="btn">今日を締める</button>
+            <button id="openToday" class="btn">締め解除</button>
+          </div>
+        </div>
+        <div class="col">
+          <div>来店回数</div>
+          <div style="margin-top:6px">
+            <button id="decVisit" class="btn">−</button>
+            <b id="visitCount" style="display:inline-block;min-width:50px;text-align:center">0</b>
+            <button id="incVisit" class="btn primary">＋</button>
+          </div>
+          <div style="font-size:12px;color:#666;margin-top:6px">0未満にはなりません</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:16px">日別サマリー（直近30日）</h3>
+      <table>
+        <thead><tr><th>日付</th><th class="right">合計</th><th class="right">現金</th><th class="right">カード</th><th class="right">CL</th><th>締め</th><th class="right">件数</th></tr></thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
     </section>
+
     <section id="sales" class="hidden">
       <h2>売上入力</h2>
-      <label>日付 <input type="date" id="saleDate"></label><br>
-      <label>現金 <input type="number" id="cash"></label>
-      <label>カード <input type="number" id="card"></label><br>
-      <label>CL-PayPay <input type="number" id="cl_paypay"></label>
-      <label>CL-交通系 <input type="number" id="cl_transit"></label>
-      <label>CL-その他 <input type="number" id="cl_other"></label><br>
-      <label>メモ <input id="saleNote"></label><br>
-      <button id="saveSale" class="btn primary">保存</button>
-      <button id="exportSales" class="btn">CSVで保存</button>
-      <input type="file" id="importSalesFile" class="hidden">
-      <button id="importSalesBtn" class="btn">CSVを読み込む</button>
-      <h3>売上一覧</h3>
-      <table id="salesTable"><thead><tr><th>日付</th><th>メモ</th><th>内訳</th><th>合計</th><th></th></tr></thead><tbody></tbody></table>
+      <div class="row">
+        <div class="col"><label>日付</label><input type="date" id="saleDate"/></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>現金（円）</label><input type="number" id="cash" inputmode="numeric" /></div>
+        <div class="col"><label>カード（円）</label><input type="number" id="card" inputmode="numeric" /></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>CL - PayPay（円）</label><input type="number" id="cl_paypay" inputmode="numeric" /></div>
+        <div class="col"><label>CL - 交通系（円）</label><input type="number" id="cl_transit" inputmode="numeric" /></div>
+        <div class="col"><label>CL - その他（円）</label><input type="number" id="cl_other" inputmode="numeric" /></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>メモ</label><input id="saleNote" placeholder="例）ランチ15名 / テイクアウト3件" /></div>
+      </div>
+      <div style="margin-top:10px">
+        <button id="saveSale" class="btn primary">保存</button>
+        <button id="exportSales" class="btn">CSVで保存</button>
+        <input type="file" id="importSalesFile" accept=".csv" class="hidden"/>
+        <button id="importSalesBtn" class="btn">CSVを読み込む</button>
+      </div>
+
+      <h3 style="margin-top:16px">売上一覧（新しい順）</h3>
+      <table>
+        <thead><tr><th>日付</th><th>メモ</th><th>内訳</th><th class="right">合計</th><th></th></tr></thead>
+        <tbody id="salesBody"></tbody>
+      </table>
     </section>
+
     <section id="customers" class="hidden">
       <h2>顧客台帳</h2>
-      <label>名前 <input id="custName"></label>
-      <label>連絡先 <input id="custContact"></label>
-      <label>メモ <input id="custMemo"></label><br>
-      <button id="saveCustomer" class="btn primary">保存</button>
-      <button id="exportCustomers" class="btn">CSVで保存</button>
-      <input type="file" id="importCustFile" class="hidden">
-      <button id="importCustBtn" class="btn">CSVを読み込む</button>
-      <h3>顧客一覧</h3>
-      <table id="custTable"><thead><tr><th>名前</th><th>連絡先</th><th>メモ</th><th></th></tr></thead><tbody></tbody></table>
+      <div class="row">
+        <div class="col"><label>名前</label><input id="custName" /></div>
+        <div class="col"><label>連絡先</label><input id="custContact" /></div>
+        <div class="col"><label>メモ</label><input id="custMemo" /></div>
+      </div>
+      <div style="margin-top:10px">
+        <button id="saveCustomer" class="btn primary">保存</button>
+        <button id="exportCustomers" class="btn">CSVで保存</button>
+        <input type="file" id="importCustFile" accept=".csv" class="hidden"/>
+        <button id="importCustBtn" class="btn">CSVを読み込む</button>
+      </div>
+
+      <h3 style="margin-top:16px">顧客一覧（新しい順）</h3>
+      <table>
+        <thead><tr><th>名前</th><th>連絡先</th><th>メモ</th><th></th></tr></thead>
+        <tbody id="custBody"></tbody>
+      </table>
     </section>
+
     <section id="line" class="hidden">
       <h2>LINE配信（ダミー）</h2>
-      <textarea id="lineMsg"></textarea><br>
-      <button id="sendLine" class="btn primary">配信する</button>
+      <textarea id="lineMsg" placeholder="新メニュー登場！"></textarea>
+      <div style="margin-top:10px"><button id="sendLine" class="btn primary">配信する（ダミー）</button></div>
     </section>
+
     <section id="settings" class="hidden">
-      <h2>設定</h2>
-      <label>PIN <input id="pinSet" maxlength="4"></label>
-      <button id="savePin" class="btn">保存</button>
-      <button id="clearPin" class="btn">解除</button><br>
-      <button id="resetData" class="btn">すべて削除</button>
+      <h2>設定 / データ管理</h2>
+      <div style="margin-bottom:12px">
+        <h3>パスコード</h3>
+        <div class="row">
+          <div class="col"><label>4桁PIN</label><input id="pinSet" maxlength="4" inputmode="numeric" placeholder="****" /></div>
+        </div>
+        <div style="margin-top:8px">
+          <button id="savePin" class="btn primary">保存</button>
+          <button id="clearPin" class="btn">解除</button>
+        </div>
+      </div>
+      <div>
+        <h3>データのリセット</h3>
+        <button id="resetData" class="btn danger">すべてのデータを削除</button>
+      </div>
     </section>
   </main>
+
   <script>
-    document.addEventListener("DOMContentLoaded",()=>{
-      const tabs=document.querySelectorAll("nav button");const sections=document.querySelectorAll("main section");
-      function showTab(id){tabs.forEach(b=>b.classList.toggle("active",b.dataset.tab===id));sections.forEach(s=>s.classList.toggle("hidden",s.id!==id));}
-      tabs.forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
-      showTab("home");
-      const fmt=n=>Number(n||0).toLocaleString();const todayStr=()=>{const d=new Date();const m=String(d.getMonth()+1).padStart(2,'0');const da=String(d.getDate()).padStart(2,'0');return d.getFullYear()+"-"+m+"-"+da;};
-      const SALES_KEY='sales',CUST_KEY='cust',VISIT_KEY='visits',PIN_KEY='pin',CLOSE_KEY='closed';
-      const getSales=()=>JSON.parse(localStorage.getItem(SALES_KEY)||'[]');const setSales=v=>localStorage.setItem(SALES_KEY,JSON.stringify(v));
-      const getCust=()=>JSON.parse(localStorage.getItem(CUST_KEY)||'[]');const setCust=v=>localStorage.setItem(CUST_KEY,JSON.stringify(v));
-      const getVisits=()=>Number(localStorage.getItem(VISIT_KEY)||0);const setVisits=v=>localStorage.setItem(VISIT_KEY,String(Math.max(0,v)));
-      const getClosed=()=>JSON.parse(localStorage.getItem(CLOSE_KEY)||'{}');const setClosed=o=>localStorage.setItem(CLOSE_KEY,JSON.stringify(o));
-      function renderToday(){const today=todayStr();const list=getSales().filter(x=>x.date===today);let sum=0,c=0,ca=0,cl=0;list.forEach(r=>{sum+=Number(r.cash||0)+Number(r.card||0)+Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0);c+=Number(r.cash||0);ca+=Number(r.card||0);cl+=Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0);});document.getElementById("todayTotal").textContent=fmt(sum);document.getElementById("todayCash").textContent=fmt(c);document.getElementById(...
+  (function(){
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    const todayStr = () => { const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${dd}`; };
+    const fmt = n => Number(n||0).toLocaleString();
+    const SALES_KEY='sales', CUST_KEY='customers', VISIT_KEY='visit_count', CLOSED_KEY='closed_dates', PIN_KEY='pin4';
+
+    // Tabs
+    function showTab(id){
+      $$('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
+      ['home','sales','customers','line','settings'].forEach(sec=>{
+        const el=document.getElementById(sec);
+        if(el) el.classList.toggle('hidden', sec!==id);
+      });
+      if(id==='home'){ renderHome(); renderSummary(); }
+      if(id==='sales'){ renderSalesTable(); }
+      if(id==='customers'){ renderCustTable(); }
+    }
+    $$('nav button').forEach(b=> b.addEventListener('click', ()=>showTab(b.dataset.tab)));
+    showTab('home');
+
+    // PIN
+    (function lockIfNeeded(){
+      const pin = localStorage.getItem(PIN_KEY);
+      if(!pin) return;
+      const overlay = document.getElementById('lock');
+      overlay.style.display='flex';
+      document.getElementById('pinEnter').addEventListener('click', ()=>{
+        const v = document.getElementById('pinInput').value.trim();
+        if(v===pin){ overlay.style.display='none'; } else { document.getElementById('pinMsg').textContent='パスコードが違います'; }
+      });
+    })();
+
+    // Visits
+    function getVisits(){ return Number(localStorage.getItem(VISIT_KEY)||0); }
+    function setVisits(v){ localStorage.setItem(VISIT_KEY, String(Math.max(0, Number(v)||0))); }
+    document.getElementById('incVisit').addEventListener('click', ()=>{ setVisits(getVisits()+1); renderHome(); });
+    document.getElementById('decVisit').addEventListener('click', ()=>{ setVisits(getVisits()-1); renderHome(); });
+
+    // Sales
+    function getSales(){ try{return JSON.parse(localStorage.getItem(SALES_KEY)||'[]')}catch{return[]} }
+    function setSales(a){ localStorage.setItem(SALES_KEY, JSON.stringify(a)); }
+    function saleTotal(r){ return Number(r.cash||0)+Number(r.card||0)+Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0); }
+    const saleDate = document.getElementById('saleDate'); saleDate.value = todayStr();
+
+    document.getElementById('saveSale').addEventListener('click', ()=>{
+      const rec = {
+        date: saleDate.value || todayStr(),
+        cash: Number(document.getElementById('cash').value||0),
+        card: Number(document.getElementById('card').value||0),
+        cl_paypay: Number(document.getElementById('cl_paypay').value||0),
+        cl_transit: Number(document.getElementById('cl_transit').value||0),
+        cl_other: Number(document.getElementById('cl_other').value||0),
+        note: document.getElementById('saleNote').value||'',
+        at: new Date().toISOString()
+      };
+      if(saleTotal(rec)===0){ alert('いずれかの金額を入力してください'); return; }
+      const list = getSales(); list.push(rec); setSales(list);
+      ['cash','card','cl_paypay','cl_transit','cl_other','saleNote'].forEach(id=> document.getElementById(id).value='');
+      renderSalesTable(); renderHome(); renderSummary();
+      alert('保存しました（ダミー）');
+    });
+
+    function renderSalesTable(){
+      const tb = document.getElementById('salesBody'); tb.innerHTML='';
+      const arr = getSales().slice().reverse();
+      arr.forEach((r, idx)=>{
+        const tot = saleTotal(r);
+        const cl = (r.cl_paypay||0)+(r.cl_transit||0)+(r.cl_other||0);
+        const parts = [];
+        if(r.cash) parts.push(`現金 ${fmt(r.cash)}`);
+        if(r.card) parts.push(`カード ${fmt(r.card)}`);
+        if(cl) parts.push(`CL ${fmt(cl)}（PP ${fmt(r.cl_paypay||0)} / 交 ${fmt(r.cl_transit||0)} / 他 ${fmt(r.cl_other||0)}）`);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.date}</td><td>${(r.note||'').replace(/[&<>"]/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[s]))}</td><td>${parts.join(' / ')||'—'}</td><td class="right">${fmt(tot)}</td><td class="right"><button class="btn" data-del="${getSales().length-1-idx}">削除</button></td>`;
+        tb.appendChild(tr);
+      });
+      tb.querySelectorAll('[data-del]').forEach(btn=> btn.addEventListener('click', ()=>{
+        const i = Number(btn.getAttribute('data-del'));
+        const all = getSales(); all.splice(i,1); setSales(all);
+        renderSalesTable(); renderHome(); renderSummary();
+      }));
+    }
+
+    document.getElementById('exportSales').addEventListener('click', ()=>{
+      const rows = [['date','cash','card','cl_paypay','cl_transit','cl_other','total','note','at']];
+      getSales().forEach(r=> rows.push([r.date,r.cash||0,r.card||0,r.cl_paypay||0,r.cl_transit||0,r.cl_other||0,saleTotal(r),(r.note||'').replace(/\n/g,' '),r.at||'']));
+      downloadCSV('sales.csv', rows);
+    });
+    document.getElementById('importSalesBtn').addEventListener('click', ()=> document.getElementById('importSalesFile').click());
+    document.getElementById('importSalesFile').addEventListener('change', e=>{
+      const f = e.target.files?.[0]; if(!f) return;
+      const rd = new FileReader();
+      rd.onload = ()=>{
+        const rows = parseCSV(String(rd.result||''));
+        const header = rows.shift()?.map(h=>h.trim().toLowerCase())||[]; const idx = n => header.indexOf(n);
+        const list = getSales();
+        rows.forEach(cols=>{
+          const rec = {date: cols[idx('date')]||todayStr(), cash:Number(cols[idx('cash')]||0), card:Number(cols[idx('card')]||0), cl_paypay:Number(cols[idx('cl_paypay')]||cols[idx('paypay')]||0), cl_transit:Number(cols[idx('cl_transit')]||cols[idx('transit')]||0), cl_other:Number(cols[idx('cl_other')]||cols[idx('other')]||0), note: cols[idx('note')]||'', at: cols[idx('at')]||new Date().toISOString()};
+          if(saleTotal(rec)===0){ const amt=Number(cols[idx('amount_total')]||cols[idx('amount')]||0); if(amt>0){ rec.cash=amt; } }
+          list.push(rec);
+        });
+        setSales(list); renderSalesTable(); renderHome(); renderSummary(); alert('インポートしました'); e.target.value='';
+      };
+      rd.readAsText(f);
+    });
+
+    // Customers
+    function getCust(){ try{return JSON.parse(localStorage.getItem(CUST_KEY)||'[]')}catch{return[]} }
+    function setCust(a){ localStorage.setItem(CUST_KEY, JSON.stringify(a)); }
+    function renderCustTable(){
+      const tb = document.getElementById('custBody'); tb.innerHTML='';
+      const arr = getCust().slice().reverse();
+      arr.forEach((r, idx)=>{
+        const real = getCust().length-1-idx;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHTML(r.name)}</td><td>${escapeHTML(r.contact||'')}</td><td>${escapeHTML(r.memo||'')}</td><td class="right"><button class="btn" data-delc="${real}">削除</button></td>`;
+        tb.appendChild(tr);
+      });
+      tb.querySelectorAll('[data-delc]').forEach(btn=> btn.addEventListener('click', ()=>{
+        const i = Number(btn.getAttribute('data-delc'));
+        const all = getCust(); all.splice(i,1); setCust(all); renderCustTable();
+      }));
+    }
+    document.getElementById('saveCustomer').addEventListener('click', ()=>{
+      const name = document.getElementById('custName').value.trim();
+      if(!name){ alert('名前を入力してください'); return; }
+      const rec = {name, contact: document.getElementById('custContact').value||'', memo: document.getElementById('custMemo').value||'', at:new Date().toISOString()};
+      const list = getCust(); list.push(rec); setCust(list);
+      ['custName','custContact','custMemo'].forEach(id=> document.getElementById(id).value='');
+      renderCustTable(); alert('保存しました（ダミー）');
+    });
+    document.getElementById('exportCustomers').addEventListener('click', ()=>{
+      const rows = [['name','contact','memo','at']];
+      getCust().forEach(r=> rows.push([r.name,r.contact||'',(r.memo||'').replace(/\n/g,' '),r.at||'']));
+      downloadCSV('customers.csv', rows);
+    });
+    document.getElementById('importCustBtn').addEventListener('click', ()=> document.getElementById('importCustFile').click());
+    document.getElementById('importCustFile').addEventListener('change', e=>{
+      const f = e.target.files?.[0]; if(!f) return; const rd = new FileReader();
+      rd.onload = ()=>{
+        const rows = parseCSV(String(rd.result||''));
+        const header = rows.shift()?.map(h=>h.trim().toLowerCase())||[]; const idx = n => header.indexOf(n);
+        const list = getCust();
+        rows.forEach(cols=>{
+          const name = (cols[idx('name')]||'').trim(); if(!name) return;
+          list.push({name, contact: cols[idx('contact')]||'', memo: cols[idx('memo')]||'', at: cols[idx('at')]||new Date().toISOString()});
+        });
+        setCust(list); renderCustTable(); alert('インポートしました'); e.target.value='';
+      };
+      rd.readAsText(f);
+    });
+
+    // Close (daily)
+    function getClosed(){ try{return JSON.parse(localStorage.getItem(CLOSED_KEY)||'{}')}catch{return{}} }
+    function setClosed(date,val){ const obj=getClosed(); if(val) obj[date]=true; else delete obj[date]; localStorage.setItem(CLOSED_KEY, JSON.stringify(obj)); }
+    document.getElementById('closeToday').addEventListener('click', ()=>{ setClosed(todayStr(), true); renderHome(); renderSummary(); });
+    document.getElementById('openToday').addEventListener('click', ()=>{ setClosed(todayStr(), false); renderHome(); renderSummary(); });
+
+    function renderHome(){
+      const d = todayStr();
+      const list = getSales().filter(x=>x.date===d);
+      const sums = list.reduce((a,r)=>{
+        a.cash+=Number(r.cash||0); a.card+=Number(r.card||0); a.pp+=Number(r.cl_paypay||0); a.tr+=Number(r.cl_transit||0); a.ot+=Number(r.cl_other||0);
+        return a;
+      },{cash:0,card:0,pp:0,tr:0,ot:0});
+      document.getElementById('todayTotal').textContent = fmt(sums.cash+sums.card+sums.pp+sums.tr+sums.ot);
+      document.getElementById('todayCash').textContent = fmt(sums.cash);
+      document.getElementById('todayCard').textContent = fmt(sums.card);
+      document.getElementById('todayCL').textContent = fmt(sums.pp+sums.tr+sums.ot);
+      document.getElementById('todayPayPay').textContent = fmt(sums.pp);
+      document.getElementById('todayTransit').textContent = fmt(sums.tr);
+      document.getElementById('todayOther').textContent = fmt(sums.ot);
+      document.getElementById('todayClosed').classList.toggle('hidden', !getClosed()[d]);
+      document.getElementById('visitCount').textContent = fmt(Number(localStorage.getItem(VISIT_KEY)||0));
+    }
+
+    function renderSummary(){
+      const map={};
+      getSales().forEach(r=>{
+        const d=r.date; const t=saleTotal(r);
+        if(!map[d]) map[d]={sum:0,cash:0,card:0,cl:0,count:0};
+        map[d].sum+=t; map[d].cash+=Number(r.cash||0); map[d].card+=Number(r.card||0); map[d].cl+=Number(r.cl_paypay||0)+Number(r.cl_transit||0)+Number(r.cl_other||0); map[d].count++;
+      });
+      const rows=Object.entries(map).map(([date,v])=>({date,...v})).sort((a,b)=>a.date<b.date?1:-1).slice(0,30);
+      const tb=document.getElementById('summaryBody'); tb.innerHTML='';
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${r.date}</td><td class="right">${fmt(r.sum)}</td><td class="right">${fmt(r.cash)}</td><td class="right">${fmt(r.card)}</td><td class="right">${fmt(r.cl)}</td><td>${getClosed()[r.date]?'✅':''}</td><td class="right">${r.count}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    // Settings (PIN)
+    document.getElementById('savePin').addEventListener('click', ()=>{
+      const v=(document.getElementById('pinSet').value||'').trim();
+      if(!/^[0-9]{4}$/.test(v)){ alert('4桁の数字を入力してください'); return; }
+      localStorage.setItem(PIN_KEY, v); alert('PINを保存しました。次回から必要です。');
+    });
+    document.getElementById('clearPin').addEventListener('click', ()=>{ localStorage.removeItem(PIN_KEY); alert('PINを解除しました'); });
+
+    document.getElementById('resetData').addEventListener('click', ()=>{
+      if(confirm('本当に端末内のデータを全削除しますか？（売上/顧客/来店回数/締め/PIN）')){
+        localStorage.removeItem(SALES_KEY); localStorage.removeItem(CUST_KEY); localStorage.removeItem(VISIT_KEY); localStorage.removeItem(CLOSED_KEY); localStorage.removeItem(PIN_KEY);
+        renderSalesTable(); renderCustTable(); renderHome(); renderSummary();
+        alert('削除しました');
+      }
+    });
+
+    // CSV helpers
+    function downloadCSV(filename, rows){
+      const csv = rows.map(r=>r.map(x=>{
+        const s=String(x==null?'':x);
+        return (s.includes(',')||s.includes('"')||s.includes('\n')) ? '"'+s.replace(/"/g,'""')+'"' : s;
+      }).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    }
+    function parseCSV(text){
+      const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(x=>x.length);
+      const out=[];
+      for(const line of lines){
+        const row=[]; let cur='', inQ=false;
+        for(let i=0;i<=line.length;i++){
+          const ch=line[i];
+          if(inQ){
+            if(ch==='"'){ if(line[i+1]==='"'){ cur+='"'; i++; } else { inQ=false; } }
+            else { cur += ch||''; }
+          }else{
+            if(ch==='"') inQ=true;
+            else if(ch===',' || ch==null){ row.push(cur); cur=''; }
+            else { cur+=ch; }
+          }
+        }
+        out.push(row);
+      }
+      return out;
+    }
+
+    // init
+    renderHome(); renderSummary(); renderSalesTable(); renderCustTable();
+  })();
+
+  // Simple HTML escaper
+  function escapeHTML(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
   </script>
 </body>
 </html>
