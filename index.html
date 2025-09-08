@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>飲食店 MVP モック v2</title>
+  <title>飲食店 MVP モック v2.1</title>
   <style>
     :root { --primary:#0a7cff; --bg:#f7f7f9; --card:#fff; --text:#222; --muted:#777; }
     *{box-sizing:border-box}
@@ -42,7 +42,7 @@
 </head>
 <body>
   <header>
-    <h1>飲食店 MVP モック v2</h1>
+    <h1>飲食店 MVP モック v2.1</h1>
     <nav>
       <button data-tab="home" class="active">ホーム</button>
       <button data-tab="sales">売上入力</button>
@@ -214,6 +214,7 @@
   </main>
 
   <script>
+  document.addEventListener('DOMContentLoaded', () => {
     // ---------- ユーティリティ ----------
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
@@ -224,29 +225,35 @@
       return `${d.getFullYear()}-${m}-${day}`;
     };
     const fmt = n => Number(n||0).toLocaleString();
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\'':'&#39;'}[m]));
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[m]));
 
     // ---------- タブ切替 ----------
     function showTab(tab){
       $$('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
       ['home','sales','customers','line','settings'].forEach(id=>{
         const el = document.getElementById(id);
-        el.classList.toggle('hidden', id!==tab);
+        if (el) el.classList.toggle('hidden', id!==tab);
       });
       if(tab==='home'){ renderToday(); renderCompare(); renderDailySummary(); }
       if(tab==='sales'){ renderSalesTable(); }
       if(tab==='customers'){ renderCustTable(); }
     }
-    $$('nav button').forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+    $$('nav button').forEach(btn=> btn && btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
     showTab('home');
 
     // ---------- 来店回数 ----------
     const VISIT_KEY = 'visit_count';
     const getVisits = () => Number(localStorage.getItem(VISIT_KEY) || 0);
     const setVisits = v => localStorage.setItem(VISIT_KEY, String(Math.max(0, Number(v)||0)));
-    const renderVisits = () => $('#visitCount').textContent = getVisits();
-    $('#incVisit').addEventListener('click', ()=>{ setVisits(getVisits()+1); renderVisits(); });
-    $('#decVisit').addEventListener('click', ()=>{ setVisits(getVisits()-1); renderVisits(); });
+    const renderVisits = () => { const el = $('#visitCount'); if(el) el.textContent = getVisits(); };
+    const incBtn = $('#incVisit'); if (incBtn) incBtn.addEventListener('click', ()=>{ setVisits(getVisits()+1); renderVisits(); });
+    const decBtn = $('#decVisit'); if (decBtn) decBtn.addEventListener('click', ()=>{ setVisits(getVisits()-1); renderVisits(); });
 
     // ---------- 売上 ----------
     const SALES_KEY = 'sales';
@@ -254,26 +261,30 @@
     const setSales = arr => localStorage.setItem(SALES_KEY, JSON.stringify(arr));
 
     // 入力フォーム初期化
-    const saleDate = $('#saleDate'); saleDate.value = todayStr();
-    $('#saveSale').addEventListener('click', ()=>{
-      const amount = Number($('#saleAmount').value || 0);
+    const saleDate = $('#saleDate'); if (saleDate) saleDate.value = todayStr();
+    const saveSaleBtn = $('#saveSale');
+    if (saveSaleBtn) saveSaleBtn.addEventListener('click', ()=>{
+      const amountEl = $('#saleAmount'), dateEl = $('#saleDate'), noteEl = $('#saleNote');
+      const amount = Number(amountEl?.value || 0);
       if(!amount){ alert('金額を入力してください'); return; }
-      const date = $('#saleDate').value || todayStr();
-      const note = $('#saleNote').value || '';
+      const date = dateEl?.value || todayStr();
+      const note = noteEl?.value || '';
       const at = new Date().toISOString();
       const list = getSales();
       list.push({ date, amount, note, at });
       setSales(list);
-      $('#saleAmount').value=''; $('#saleNote').value='';
+      if(amountEl) amountEl.value='';
+      if(noteEl) noteEl.value='';
       renderSalesTable(); renderToday(); renderCompare(); renderDailySummary();
       alert('保存しました（ダミー）');
     });
 
     function renderSalesTable(){
-      const tbody = $('#salesTable tbody'); tbody.innerHTML = '';
+      const tbody = $('#salesTable tbody'); if(!tbody) return;
+      tbody.innerHTML = '';
       const arr = getSales();
       const list = arr.slice().reverse(); // 表示は新しい順
-      $('#allSalesCount').textContent = arr.length + ' 件';
+      const cnt = $('#allSalesCount'); if (cnt) cnt.textContent = arr.length + ' 件';
       list.forEach((r, idxFromTop)=>{
         const realIndex = arr.length - 1 - idxFromTop;
         const tr = document.createElement('tr');
@@ -292,25 +303,23 @@
       });
     }
 
-    // 今日の合計と明細
+    // 今日の合計
     function renderToday(){
       const today = todayStr();
-      $('#todayLabel').textContent = today;
+      const lab = $('#todayLabel'); if (lab) lab.textContent = today;
       const list = getSales().filter(x => x.date === today);
       const total = list.reduce((a,b)=>a + Number(b.amount||0), 0);
-      $('#todayTotal').textContent = fmt(total);
-
-      const tbody = $('#cmpTableA').querySelector('tbody'); // 再利用しない（別）ので何もしない
+      const tot = $('#todayTotal'); if (tot) tot.textContent = fmt(total);
       renderVisits();
-      // 今日の明細は比較ブロックではなく、別テーブルに出したいときはここに追加可能
     }
 
     // A/B 比較
     function renderCompare(){
-      const a = $('#cmpDateA').value || todayStr();
-      const b = $('#cmpDateB').value || prevDateStr(todayStr());
-      $('#cmpDateA').value = a;
-      $('#cmpDateB').value = b;
+      const aEl = $('#cmpDateA'), bEl = $('#cmpDateB');
+      const a = aEl?.value || todayStr();
+      const b = bEl?.value || prevDateStr(todayStr());
+      if (aEl && !aEl.value) aEl.value = a;
+      if (bEl && !bEl.value) bEl.value = b;
 
       const listA = getSales().filter(x=>x.date===a);
       const listB = getSales().filter(x=>x.date===b);
@@ -318,18 +327,20 @@
       const sumA = listA.reduce((s,r)=>s+Number(r.amount||0),0);
       const sumB = listB.reduce((s,r)=>s+Number(r.amount||0),0);
 
-      $('#cmpSumA').textContent = fmt(sumA);
-      $('#cmpCntA').textContent = listA.length;
-      $('#cmpSumB').textContent = fmt(sumB);
-      $('#cmpCntB').textContent = listB.length;
+      const sa = $('#cmpSumA'); if (sa) sa.textContent = fmt(sumA);
+      const ca = $('#cmpCntA'); if (ca) ca.textContent = listA.length;
+      const sb = $('#cmpSumB'); if (sb) sb.textContent = fmt(sumB);
+      const cb = $('#cmpCntB'); if (cb) cb.textContent = listB.length;
 
       fillCmpTable('#cmpTableA tbody', listA);
       fillCmpTable('#cmpTableB tbody', listB);
 
       const diff = sumA - sumB;
       const diffEl = $('#cmpDiff');
-      diffEl.textContent = `${fmt(diff)} 円`;
-      diffEl.className = diff >= 0 ? 'diff-pos' : 'diff-neg';
+      if (diffEl) {
+        diffEl.textContent = `${fmt(diff)} 円`;
+        diffEl.className = diff >= 0 ? 'diff-pos' : 'diff-neg';
+      }
     }
     function prevDateStr(iso){
       const d = new Date(iso);
@@ -339,7 +350,8 @@
       return `${d.getFullYear()}-${m}-${day}`;
     }
     function fillCmpTable(sel, list){
-      const tb = document.querySelector(sel); tb.innerHTML='';
+      const tb = document.querySelector(sel); if(!tb) return;
+      tb.innerHTML='';
       list.slice().reverse().forEach(r=>{
         const time = (r.at||'').split('T')[1]?.slice(0,5) || '--:--';
         const tr = document.createElement('tr');
@@ -347,8 +359,8 @@
         tb.appendChild(tr);
       });
     }
-    $('#cmpDateA').addEventListener('change', renderCompare);
-    $('#cmpDateB').addEventListener('change', renderCompare);
+    const aDate = $('#cmpDateA'); if (aDate) aDate.addEventListener('change', renderCompare);
+    const bDate = $('#cmpDateB'); if (bDate) bDate.addEventListener('change', renderCompare);
 
     // 日別サマリー（直近30日）
     function renderDailySummary(){
@@ -358,14 +370,14 @@
         byDate[r.date].sum += Number(r.amount||0);
         byDate[r.date].count += 1;
       });
-      // 直近30日分を新しい順に
       const rows = Object.entries(byDate)
         .map(([date, v]) => ({date, ...v}))
         .sort((a,b)=> a.date < b.date ? 1 : -1)
         .slice(0, 30);
 
-      $('#summaryCount').textContent = `${rows.length} 日`;
-      const tb = $('#summaryTable tbody'); tb.innerHTML='';
+      const sc = $('#summaryCount'); if (sc) sc.textContent = `${rows.length} 日`;
+      const tb = $('#summaryTable tbody'); if(!tb) return;
+      tb.innerHTML='';
       rows.forEach(r=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${r.date}</td><td class="right">${fmt(r.sum)}</td><td class="right">${r.count}</td>`;
@@ -374,7 +386,8 @@
     }
 
     // エクスポート
-    $('#exportSales').addEventListener('click', ()=>{
+    const exportSalesBtn = $('#exportSales');
+    if (exportSalesBtn) exportSalesBtn.addEventListener('click', ()=>{
       const rows = [['date','amount','note','at'], ...getSales().map(r=>[r.date, r.amount, (r.note||'').replace(/\n/g,' '), r.at||''])];
       downloadCSV('sales.csv', rows);
     });
@@ -384,22 +397,25 @@
     const getCust = () => { try{ return JSON.parse(localStorage.getItem(CUST_KEY)||'[]'); } catch { return []; } };
     const setCust = arr => localStorage.setItem(CUST_KEY, JSON.stringify(arr));
 
-    $('#saveCustomer').addEventListener('click', ()=>{
-      const name = $('#custName').value.trim();
+    const saveCustomerBtn = $('#saveCustomer');
+    if (saveCustomerBtn) saveCustomerBtn.addEventListener('click', ()=>{
+      const name = $('#custName')?.value.trim();
       if(!name){ alert('名前を入力してください'); return; }
-      const contact = $('#custContact').value.trim();
-      const memo = $('#custMemo').value.trim();
+      const contact = $('#custContact')?.value.trim() || '';
+      const memo = $('#custMemo')?.value.trim() || '';
       const at = new Date().toISOString();
       const list = getCust(); list.push({name, contact, memo, at}); setCust(list);
-      $('#custName').value=''; $('#custContact').value=''; $('#custMemo').value='';
+      const cn = $('#custName'), cc = $('#custContact'), cm = $('#custMemo');
+      if(cn) cn.value=''; if(cc) cc.value=''; if(cm) cm.value='';
       renderCustTable();
       alert('保存しました（ダミー）');
     });
 
     function renderCustTable(){
-      const tbody = $('#custTable tbody'); tbody.innerHTML='';
+      const tbody = $('#custTable tbody'); if(!tbody) return;
+      tbody.innerHTML='';
       const list = getCust().slice().reverse(); // 新しい順
-      $('#custCount').textContent = list.length + ' 件';
+      const cc = $('#custCount'); if (cc) cc.textContent = list.length + ' 件';
       list.forEach((r, idxFromTop)=>{
         const realIndex = getCust().length - 1 - idxFromTop;
         const tr = document.createElement('tr');
@@ -418,20 +434,17 @@
       });
     }
 
-    $('#exportCustomers').addEventListener('click', ()=>{
-      const rows = [['name','contact','memo','at'], ...getCust().map(r=>[r.name, r.contact||'', (r.memo||'').replace(/\n/g,' '), r.at||''])];
-      downloadCSV('customers.csv', rows);
-    });
-
     // ---------- LINE (dummy) ----------
-    $('#sendLine').addEventListener('click', ()=>{
-      const msg = $('#lineMsg').value.trim();
+    const sendLineBtn = $('#sendLine');
+    if (sendLineBtn) sendLineBtn.addEventListener('click', ()=>{
+      const msg = $('#lineMsg')?.value.trim();
       if(!msg) { alert('メッセージを入力してください'); return; }
       alert('LINE配信しました！（ダミー）\n\n' + msg);
     });
 
     // ---------- 設定 ----------
-    $('#resetData').addEventListener('click', ()=>{
+    const resetBtn = $('#resetData');
+    if (resetBtn) resetBtn.addEventListener('click', ()=>{
       if(confirm('本当に端末内のデータを全消去しますか？（売上/顧客/来店回数）')){
         localStorage.removeItem(SALES_KEY);
         localStorage.removeItem(CUST_KEY);
@@ -445,7 +458,7 @@
       }
     });
 
-    // ---------- CSV / 安全 ----------
+    // ---------- CSV ----------
     function downloadCSV(filename, rows){
       const csv = rows.map(r=>r.map(x => {
         const s = String(x);
@@ -459,9 +472,9 @@
 
     // 初期表示
     (function init(){
-      // 比較の日付デフォルト：A=今日、B=前日
-      $('#cmpDateA').value = todayStr();
-      $('#cmpDateB').value = prevDateStr(todayStr());
+      const cmpA = $('#cmpDateA'), cmpB = $('#cmpDateB');
+      if (cmpA && !cmpA.value) cmpA.value = todayStr();
+      if (cmpB && !cmpB.value) cmpB.value = prevDateStr(todayStr());
       renderVisits();
       renderToday();
       renderCompare();
@@ -469,6 +482,16 @@
       renderSalesTable();
       renderCustTable();
     })();
+
+    // 便利関数
+    function prevDateStr(iso){
+      const d = new Date(iso);
+      d.setDate(d.getDate()-1);
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+  });
   </script>
 </body>
 </html>
