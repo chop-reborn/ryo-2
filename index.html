@@ -1,304 +1,474 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>飲食店MVPモック</title>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif; margin: 0; background:#f7f7f7; }
-  header { background:#111; color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; position: sticky; top:0; }
-  header h1 { margin:0; font-size:16px; }
-  .tabs { display:flex; gap:8px; }
-  .tab { background:#333; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
-  .tab.active { background:#06c; }
-  main { padding:16px; max-width:900px; margin: 0 auto; }
-  .card { background:#fff; border-radius:10px; padding:14px; margin:12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  .sec-title { font-weight:700; margin:0 0 8px 0; }
-  label { display:block; margin:8px 0 4px; font-size: 14px; }
-  input[type="text"], input[type="date"], input[type="number"], textarea, select {
-    width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff;
-  }
-  textarea { min-height:70px; }
-  .row { display:flex; gap:10px; flex-wrap: wrap; }
-  .row > div { flex:1; min-width: 160px; }
-  button.primary { background:#06c; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
-  button.secondary { background:#eee; color:#111; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  th, td { border-bottom:1px solid #eee; padding:8px; text-align:left; }
-  .muted { color:#666; font-size:12px; }
-  .pill { background:#eef5ff; color:#06c; font-weight:700; padding:4px 8px; border-radius:999px; font-size:12px; display:inline-block; min-width:56px; text-align:center;}
-  .space { height:8px; }
-  .right { text-align:right; }
-  .footer { color:#777; font-size:12px; margin-top:12px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>飲食店 MVP モック v2</title>
+  <style>
+    :root { --primary:#0a7cff; --bg:#f7f7f9; --card:#fff; --text:#222; --muted:#777; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP",system-ui,sans-serif;color:var(--text);background:var(--bg)}
+    header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;z-index:10}
+    h1{margin:0;padding:14px 16px;font-size:18px}
+    nav{display:flex;gap:8px;padding:8px 12px 12px;flex-wrap:wrap}
+    nav button{flex:1;min-width:120px;padding:10px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
+    nav button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    main{padding:16px;max-width:980px;margin:0 auto}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);padding:16px;margin-bottom:16px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+    input, textarea, select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff}
+    textarea{min-height:96px}
+    .col{flex:1;min-width:160px}
+    .btn{padding:10px 14px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer}
+    .btn.secondary{background:#eaeef4;color:#222}
+    .btn.danger{background:#ff4d4f}
+    .btn.ghost{background:transparent;color:var(--primary);border:1px solid var(--primary)}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+    th{background:#fafafa;position:sticky;top:0}
+    .right{text-align:right}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:#f1f5ff;color:#225}
+    .flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+    .hidden{display:none}
+    footer{padding:24px;text-align:center;color:#999}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+    .diff-pos{color:#0a7c2a;font-weight:700}
+    .diff-neg{color:#b00020;font-weight:700}
+  </style>
 </head>
 <body>
-<header>
-  <h1>飲食店MVPモック</h1>
-  <div class="tabs">
-    <button class="tab active" data-tab="home">ホーム</button>
-    <button class="tab" data-tab="sales">売上</button>
-    <button class="tab" data-tab="customers">顧客</button>
-    <button class="tab" data-tab="line">LINE配信</button>
-  </div>
-</header>
-<main>
-  <!-- HOME -->
-  <section id="home" class="tabpane">
-    <div class="card">
-      <div class="sec-title">今日の売上（合計）</div>
-      <div class="row">
-        <div>現金<br><span id="home-cash" class="pill">¥0</span></div>
-        <div>カード<br><span id="home-card" class="pill">¥0</span></div>
-        <div>CL（ツケ等）<br><span id="home-cl" class="pill">¥0</span></div>
+  <header>
+    <h1>飲食店 MVP モック v2</h1>
+    <nav>
+      <button data-tab="home" class="active">ホーム</button>
+      <button data-tab="sales">売上入力</button>
+      <button data-tab="customers">顧客台帳</button>
+      <button data-tab="line">LINE配信（ダミー）</button>
+      <button data-tab="settings">設定</button>
+    </nav>
+  </header>
+  <main>
+    <!-- Home -->
+    <section id="home" class="card">
+      <h2>今日のダッシュボード</h2>
+      <div class="row mt8">
+        <div class="card" style="flex:1">
+          <div class="muted">本日の売上</div>
+          <div style="font-size:28px;font-weight:700"><span id="todayTotal">0</span> 円</div>
+          <div class="muted mt8">日付: <span id="todayLabel"></span></div>
+        </div>
+        <div class="card" style="flex:1">
+          <div class="muted">来店回数</div>
+          <div class="flex mt8">
+            <button id="decVisit" class="btn secondary">−</button>
+            <div style="font-size:28px;font-weight:700;min-width:72px;text-align:center" id="visitCount">0</div>
+            <button id="incVisit" class="btn">＋</button>
+          </div>
+          <div class="muted mt8">（0未満にはなりません）</div>
+        </div>
       </div>
-      <div class="space"></div>
-      <button class="primary" onclick="goTab('sales')">＋ 売上を入力</button>
-      <button class="secondary" onclick="exportCSV()">CSV出力（マネフォ）</button>
-      <div class="footer">※ CSVは「日次まとめ」の形式です。マネーフォワードの振替伝票インポートで読み込みできます。</div>
-    </div>
 
-    <div class="card">
-      <div class="sec-title">来店状況</div>
-      <div class="row">
-        <div>新規<br><span id="home-new" class="pill">0 人</span></div>
-        <div>リピート<br><span id="home-repeat" class="pill">0 人</span></div>
+      <div class="card mt8">
+        <h3>日付指定で見る / 比べる</h3>
+        <div class="grid2 mt8">
+          <div>
+            <label>日付A</label>
+            <input type="date" id="cmpDateA">
+            <div class="mt8">合計：<strong id="cmpSumA">0</strong> 円（<span id="cmpCntA">0</span> 件）</div>
+            <div class="mt8" style="max-height:160px;overflow:auto">
+              <table id="cmpTableA"><thead><tr><th>時刻</th><th>メモ</th><th class="right">金額</th></tr></thead><tbody></tbody></table>
+            </div>
+          </div>
+          <div>
+            <label>日付B</label>
+            <input type="date" id="cmpDateB">
+            <div class="mt8">合計：<strong id="cmpSumB">0</strong> 円（<span id="cmpCntB">0</span> 件）</div>
+            <div class="mt8" style="max-height:160px;overflow:auto">
+              <table id="cmpTableB"><thead><tr><th>時刻</th><th>メモ</th><th class="right">金額</th></tr></thead><tbody></tbody></table>
+            </div>
+          </div>
+        </div>
+        <div class="mt12">
+          <span class="muted">差分（A − B）：</span>
+          <span id="cmpDiff" class="diff-pos">0 円</span>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="sec-title">今日の自動配信</div>
-      <div id="home-auto-msg" class="muted">明日 9:30「ありがとうございました！（次回100円OFF）」を配信予定</div>
-    </div>
-  </section>
+      <div class="card mt8">
+        <div class="flex">
+          <div class="muted">日別サマリー（直近30日）</div>
+          <span class="pill" id="summaryCount">0 日</span>
+        </div>
+        <div class="mt12" style="max-height:300px;overflow:auto">
+          <table id="summaryTable">
+            <thead><tr><th>日付</th><th class="right">合計</th><th class="right">件数</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-  <!-- SALES -->
-  <section id="sales" class="tabpane" style="display:none;">
-    <div class="card">
-      <div class="sec-title">日次売上の入力</div>
+    <!-- Sales -->
+    <section id="sales" class="card hidden">
+      <h2>売上入力</h2>
       <div class="row">
-        <div>
+        <div class="col">
           <label>日付</label>
-          <input type="date" id="sales-date">
+          <input type="date" id="saleDate" />
         </div>
-        <div>
-          <label>客数</label>
-          <input type="number" id="sales-guests" min="0" placeholder="0">
+        <div class="col">
+          <label>金額（円）</label>
+          <input type="number" id="saleAmount" placeholder="例）12000" inputmode="numeric" />
         </div>
       </div>
       <div class="row">
-        <div>
-          <label>現金</label>
-          <input type="number" id="sales-cash" min="0" placeholder="0">
-        </div>
-        <div>
-          <label>カード</label>
-          <input type="number" id="sales-card" min="0" placeholder="0">
-        </div>
-        <div>
-          <label>CL（ツケ等）</label>
-          <input type="number" id="sales-cl" min="0" placeholder="0">
+        <div class="col">
+          <label>メモ</label>
+          <input id="saleNote" placeholder="例）ランチ15名 / テイクアウト3件" />
         </div>
       </div>
-      <div class="space"></div>
-      <button class="primary" onclick="saveSales()">保存する</button>
-    </div>
+      <div class="flex mt12">
+        <button class="btn" id="saveSale">保存</button>
+        <button class="btn secondary" id="exportSales">CSVで保存</button>
+      </div>
 
-    <div class="card">
-      <div class="sec-title">日別一覧</div>
-      <table id="sales-table">
-        <thead>
-          <tr>
-            <th>日付</th><th class="right">現金</th><th class="right">カード</th><th class="right">CL</th><th class="right">客数</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
+      <div class="card mt16">
+        <div class="flex">
+          <div class="muted">売上一覧（新しい順）</div>
+          <span class="pill" id="allSalesCount">0 件</span>
+        </div>
+        <div class="mt12" style="max-height:300px;overflow:auto">
+          <table id="salesTable">
+            <thead><tr><th>日付</th><th>メモ</th><th class="right">金額</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-  <!-- CUSTOMERS -->
-  <section id="customers" class="tabpane" style="display:none;">
-    <div class="card">
-      <div class="sec-title">顧客を追加</div>
+    <!-- Customers -->
+    <section id="customers" class="card hidden">
+      <h2>顧客台帳</h2>
       <div class="row">
-        <div>
-          <label>お名前（ニックネーム可）</label>
-          <input type="text" id="cust-name" placeholder="例：田中さん">
+        <div class="col">
+          <label>名前</label>
+          <input id="custName" placeholder="山田 太郎" />
         </div>
-        <div>
-          <label>種別</label>
-          <select id="cust-type">
-            <option value="新規">新規</option>
-            <option value="常連">常連</option>
-            <option value="紹介">紹介</option>
-          </select>
+        <div class="col">
+          <label>連絡先</label>
+          <input id="custContact" placeholder="090-xxxx-xxxx / LINE ID" />
         </div>
       </div>
-      <label>メモ</label>
-      <textarea id="cust-memo" placeholder="好み、注意点など"></textarea>
-      <button class="primary" onclick="addCustomer()">追加する</button>
-    </div>
-
-    <div class="card">
-      <div class="sec-title">顧客リスト</div>
-      <table id="cust-table">
-        <thead>
-          <tr><th>名前</th><th>来店回数</th><th>最終来店</th><th>メモ</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="footer">※ 顧客カードをクリックすると来店回数+1（擬似的な来店記録）</div>
-    </div>
-  </section>
-
-  <!-- LINE -->
-  <section id="line" class="tabpane" style="display:none;">
-    <div class="card">
-      <div class="sec-title">自動配信ルール（MVP）</div>
-      <label><input type="checkbox" id="rule-thanks" checked> 来店翌日 9:30「ありがとうございました！次回100円OFF」</label>
-      <div class="space"></div>
-      <button class="primary" onclick="saveLineRules()">保存する</button>
-      <div id="line-save-msg" class="muted"></div>
-    </div>
-
-    <div class="card">
-      <div class="sec-title">手動配信（ダミー）</div>
-      <label>本文</label>
-      <textarea id="line-body" placeholder="例：本日限定で◯◯が半額！"></textarea>
       <div class="row">
-        <div><button class="secondary" onclick="previewLine()">プレビュー</button></div>
-        <div><button class="primary" onclick="sendLine()">配信（ダミー）</button></div>
+        <div class="col">
+          <label>メモ</label>
+          <input id="custMemo" placeholder="アレルギー：エビ / 好み：辛口" />
+        </div>
       </div>
-      <div id="line-preview" class="muted"></div>
-    </div>
-  </section>
-</main>
+      <div class="flex mt12">
+        <button class="btn" id="saveCustomer">保存</button>
+        <button class="btn secondary" id="exportCustomers">CSVで保存</button>
+      </div>
 
-<script>
-const S = {
-  get(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch(e){ return fallback; } },
-  set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-};
-function goTab(name){
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tabpane').forEach(p=>p.style.display='none');
-  document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
-  document.getElementById(name).style.display='block';
-  if(name==='home') refreshHome();
-  if(name==='sales') refreshSalesTable();
-  if(name==='customers') refreshCustomers();
-}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click', ()=>goTab(b.dataset.tab)));
+      <div class="card mt16">
+        <div class="flex">
+          <div class="muted">顧客一覧（新しい順）</div>
+          <span class="pill" id="custCount">0 件</span>
+        </div>
+        <div class="mt12" style="max-height:300px;overflow:auto">
+          <table id="custTable">
+            <thead><tr><th>名前</th><th>連絡先</th><th>メモ</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-function saveSales(){
-  const d = document.getElementById('sales-date').value || new Date().toISOString().slice(0,10);
-  const cash = Number(document.getElementById('sales-cash').value||0);
-  const card = Number(document.getElementById('sales-card').value||0);
-  const cl = Number(document.getElementById('sales-cl').value||0);
-  const guests = Number(document.getElementById('sales-guests').value||0);
-  const sales = S.get('sales', {});
-  sales[d] = {cash, card, cl, guests};
-  S.set('sales', sales);
-  refreshSalesTable();
-  refreshHome();
-  alert('保存しました');
-}
-function refreshSalesTable(){
-  const tbody = document.querySelector('#sales-table tbody');
-  tbody.innerHTML='';
-  const sales = S.get('sales', {});
-  const days = Object.keys(sales).sort().reverse();
-  days.forEach(d=>{
-    const {cash, card, cl, guests} = sales[d];
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${d}</td>
-      <td class="right">¥${(cash||0).toLocaleString()}</td>
-      <td class="right">¥${(card||0).toLocaleString()}</td>
-      <td class="right">¥${(cl||0).toLocaleString()}</td>
-      <td class="right">${guests||0}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function refreshHome(){
-  const sales = S.get('sales', {});
-  const t = sales[todayStr()] || {cash:0, card:0, cl:0};
-  document.getElementById('home-cash').textContent = '¥'+(t.cash||0).toLocaleString();
-  document.getElementById('home-card').textContent = '¥'+(t.card||0).toLocaleString();
-  document.getElementById('home-cl').textContent = '¥'+(t.cl||0).toLocaleString();
-  const customers = S.get('customers', []);
-  const today = todayStr();
-  let nNew=0, nRep=0;
-  customers.forEach(c=>{
-    if(c.lastVisit===today) (c.visits<=1? nNew++: nRep++);
-  });
-  document.getElementById('home-new').textContent = nNew+' 人';
-  document.getElementById('home-repeat').textContent = nRep+' 人';
-}
-function addCustomer(){
-  const name = document.getElementById('cust-name').value.trim();
-  const type = document.getElementById('cust-type').value;
-  const memo = document.getElementById('cust-memo').value.trim();
-  if(!name){ alert('お名前を入れてください'); return; }
-  const customers = S.get('customers', []);
-  customers.push({name, type, memo, visits:1, lastVisit: todayStr()});
-  S.set('customers', customers);
-  document.getElementById('cust-name').value='';
-  document.getElementById('cust-memo').value='';
-  refreshCustomers();
-  refreshHome();
-}
-function refreshCustomers(){
-  const tbody = document.querySelector('#cust-table tbody');
-  tbody.innerHTML='';
-  const customers = S.get('customers', []);
-  customers.sort((a,b)=> (b.visits||0)-(a.visits||0));
-  customers.forEach((c, idx)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${c.name}</td><td>${c.visits||0}</td><td>${c.lastVisit||'-'}</td><td>${c.memo||''}</td>`;
-    tr.style.cursor='pointer';
-    tr.title='クリックで来店回数+1（擬似）';
-    tr.addEventListener('click', ()=>{
-      c.visits=(c.visits||0)+1; c.lastVisit=todayStr();
-      customers[idx]=c; S.set('customers', customers);
-      refreshCustomers(); refreshHome();
+    <!-- LINE (dummy) -->
+    <section id="line" class="card hidden">
+      <h2>LINE配信（ダミー）</h2>
+      <p class="muted">このモックでは、配信ボタンを押すとダイアログが出るだけです。</p>
+      <div class="row">
+        <div class="col">
+          <label>メッセージ</label>
+          <textarea id="lineMsg" placeholder="新メニュー登場！本日限定○○％OFF"></textarea>
+        </div>
+      </div>
+      <button class="btn" id="sendLine">配信する（ダミー）</button>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="card hidden">
+      <h2>設定 / データ管理</h2>
+      <div class="flex">
+        <button class="btn danger" id="resetData">すべてのデータを削除</button>
+        <span class="muted">（売上・顧客・来店回数を端末から消します）</span>
+      </div>
+    </section>
+
+    <footer>© MVP Mock – ローカル保存（ブラウザ内）</footer>
+  </main>
+
+  <script>
+    // ---------- ユーティリティ ----------
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    const todayStr = () => {
+      const d = new Date();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    };
+    const fmt = n => Number(n||0).toLocaleString();
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\'':'&#39;'}[m]));
+
+    // ---------- タブ切替 ----------
+    function showTab(tab){
+      $$('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+      ['home','sales','customers','line','settings'].forEach(id=>{
+        const el = document.getElementById(id);
+        el.classList.toggle('hidden', id!==tab);
+      });
+      if(tab==='home'){ renderToday(); renderCompare(); renderDailySummary(); }
+      if(tab==='sales'){ renderSalesTable(); }
+      if(tab==='customers'){ renderCustTable(); }
+    }
+    $$('nav button').forEach(btn=>btn.addEventListener('click', ()=>showTab(btn.dataset.tab)));
+    showTab('home');
+
+    // ---------- 来店回数 ----------
+    const VISIT_KEY = 'visit_count';
+    const getVisits = () => Number(localStorage.getItem(VISIT_KEY) || 0);
+    const setVisits = v => localStorage.setItem(VISIT_KEY, String(Math.max(0, Number(v)||0)));
+    const renderVisits = () => $('#visitCount').textContent = getVisits();
+    $('#incVisit').addEventListener('click', ()=>{ setVisits(getVisits()+1); renderVisits(); });
+    $('#decVisit').addEventListener('click', ()=>{ setVisits(getVisits()-1); renderVisits(); });
+
+    // ---------- 売上 ----------
+    const SALES_KEY = 'sales';
+    const getSales = () => { try { return JSON.parse(localStorage.getItem(SALES_KEY) || '[]'); } catch { return []; } };
+    const setSales = arr => localStorage.setItem(SALES_KEY, JSON.stringify(arr));
+
+    // 入力フォーム初期化
+    const saleDate = $('#saleDate'); saleDate.value = todayStr();
+    $('#saveSale').addEventListener('click', ()=>{
+      const amount = Number($('#saleAmount').value || 0);
+      if(!amount){ alert('金額を入力してください'); return; }
+      const date = $('#saleDate').value || todayStr();
+      const note = $('#saleNote').value || '';
+      const at = new Date().toISOString();
+      const list = getSales();
+      list.push({ date, amount, note, at });
+      setSales(list);
+      $('#saleAmount').value=''; $('#saleNote').value='';
+      renderSalesTable(); renderToday(); renderCompare(); renderDailySummary();
+      alert('保存しました（ダミー）');
     });
-    tbody.appendChild(tr);
-  });
-}
-function saveLineRules(){
-  const rule = document.getElementById('rule-thanks').checked;
-  S.set('line_rules', {thanks: rule});
-  const msg = document.getElementById('line-save-msg');
-  msg.textContent = '保存しました。';
-  setTimeout(()=>msg.textContent='', 1500);
-}
-function previewLine(){
-  const body = document.getElementById('line-body').value.trim() || '（本文未入力）';
-  document.getElementById('line-preview').textContent = 'プレビュー：' + body;
-}
-function sendLine(){
-  alert('ダミー送信：このモックでは実際の配信は行いません。');
-}
-function exportCSV(){
-  const sales = S.get('sales', {});
-  const header = ['date','cash','card','cl','guests'];
-  let csv = header.join(',') + '\n';
-  Object.keys(sales).sort().forEach(d=>{
-    const {cash=0, card=0, cl=0, guests=0} = sales[d];
-    csv += [d, cash, card, cl, guests].join(',') + '\n';
-  });
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'daily_sales_for_moneyforward.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-(function init(){
-  document.getElementById('sales-date').value = todayStr();
-  refreshHome(); refreshSalesTable(); refreshCustomers();
-})();
-</script>
+
+    function renderSalesTable(){
+      const tbody = $('#salesTable tbody'); tbody.innerHTML = '';
+      const arr = getSales();
+      const list = arr.slice().reverse(); // 表示は新しい順
+      $('#allSalesCount').textContent = arr.length + ' 件';
+      list.forEach((r, idxFromTop)=>{
+        const realIndex = arr.length - 1 - idxFromTop;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.note||'')}</td><td class="right">${fmt(r.amount)}</td>
+                        <td class="right"><button class="btn ghost" data-del="${realIndex}">削除</button></td>`;
+        tbody.appendChild(tr);
+      });
+      tbody.querySelectorAll('[data-del]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const i = Number(btn.getAttribute('data-del'));
+          const arr2 = getSales();
+          arr2.splice(i,1);
+          setSales(arr2);
+          renderSalesTable(); renderToday(); renderCompare(); renderDailySummary();
+        });
+      });
+    }
+
+    // 今日の合計と明細
+    function renderToday(){
+      const today = todayStr();
+      $('#todayLabel').textContent = today;
+      const list = getSales().filter(x => x.date === today);
+      const total = list.reduce((a,b)=>a + Number(b.amount||0), 0);
+      $('#todayTotal').textContent = fmt(total);
+
+      const tbody = $('#cmpTableA').querySelector('tbody'); // 再利用しない（別）ので何もしない
+      renderVisits();
+      // 今日の明細は比較ブロックではなく、別テーブルに出したいときはここに追加可能
+    }
+
+    // A/B 比較
+    function renderCompare(){
+      const a = $('#cmpDateA').value || todayStr();
+      const b = $('#cmpDateB').value || prevDateStr(todayStr());
+      $('#cmpDateA').value = a;
+      $('#cmpDateB').value = b;
+
+      const listA = getSales().filter(x=>x.date===a);
+      const listB = getSales().filter(x=>x.date===b);
+
+      const sumA = listA.reduce((s,r)=>s+Number(r.amount||0),0);
+      const sumB = listB.reduce((s,r)=>s+Number(r.amount||0),0);
+
+      $('#cmpSumA').textContent = fmt(sumA);
+      $('#cmpCntA').textContent = listA.length;
+      $('#cmpSumB').textContent = fmt(sumB);
+      $('#cmpCntB').textContent = listB.length;
+
+      fillCmpTable('#cmpTableA tbody', listA);
+      fillCmpTable('#cmpTableB tbody', listB);
+
+      const diff = sumA - sumB;
+      const diffEl = $('#cmpDiff');
+      diffEl.textContent = `${fmt(diff)} 円`;
+      diffEl.className = diff >= 0 ? 'diff-pos' : 'diff-neg';
+    }
+    function prevDateStr(iso){
+      const d = new Date(iso);
+      d.setDate(d.getDate()-1);
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+    function fillCmpTable(sel, list){
+      const tb = document.querySelector(sel); tb.innerHTML='';
+      list.slice().reverse().forEach(r=>{
+        const time = (r.at||'').split('T')[1]?.slice(0,5) || '--:--';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${time}</td><td>${escapeHtml(r.note||'')}</td><td class="right">${fmt(r.amount)}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+    $('#cmpDateA').addEventListener('change', renderCompare);
+    $('#cmpDateB').addEventListener('change', renderCompare);
+
+    // 日別サマリー（直近30日）
+    function renderDailySummary(){
+      const byDate = {};
+      getSales().forEach(r=>{
+        byDate[r.date] = byDate[r.date] || {sum:0,count:0};
+        byDate[r.date].sum += Number(r.amount||0);
+        byDate[r.date].count += 1;
+      });
+      // 直近30日分を新しい順に
+      const rows = Object.entries(byDate)
+        .map(([date, v]) => ({date, ...v}))
+        .sort((a,b)=> a.date < b.date ? 1 : -1)
+        .slice(0, 30);
+
+      $('#summaryCount').textContent = `${rows.length} 日`;
+      const tb = $('#summaryTable tbody'); tb.innerHTML='';
+      rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.date}</td><td class="right">${fmt(r.sum)}</td><td class="right">${r.count}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    // エクスポート
+    $('#exportSales').addEventListener('click', ()=>{
+      const rows = [['date','amount','note','at'], ...getSales().map(r=>[r.date, r.amount, (r.note||'').replace(/\n/g,' '), r.at||''])];
+      downloadCSV('sales.csv', rows);
+    });
+
+    // ---------- 顧客 ----------
+    const CUST_KEY = 'customers';
+    const getCust = () => { try{ return JSON.parse(localStorage.getItem(CUST_KEY)||'[]'); } catch { return []; } };
+    const setCust = arr => localStorage.setItem(CUST_KEY, JSON.stringify(arr));
+
+    $('#saveCustomer').addEventListener('click', ()=>{
+      const name = $('#custName').value.trim();
+      if(!name){ alert('名前を入力してください'); return; }
+      const contact = $('#custContact').value.trim();
+      const memo = $('#custMemo').value.trim();
+      const at = new Date().toISOString();
+      const list = getCust(); list.push({name, contact, memo, at}); setCust(list);
+      $('#custName').value=''; $('#custContact').value=''; $('#custMemo').value='';
+      renderCustTable();
+      alert('保存しました（ダミー）');
+    });
+
+    function renderCustTable(){
+      const tbody = $('#custTable tbody'); tbody.innerHTML='';
+      const list = getCust().slice().reverse(); // 新しい順
+      $('#custCount').textContent = list.length + ' 件';
+      list.forEach((r, idxFromTop)=>{
+        const realIndex = getCust().length - 1 - idxFromTop;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.contact||'')}</td><td>${escapeHtml(r.memo||'')}</td>
+                        <td class="right"><button class="btn ghost" data-delc="${realIndex}">削除</button></td>`;
+        tbody.appendChild(tr);
+      });
+      tbody.querySelectorAll('[data-delc]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const i = Number(btn.getAttribute('data-delc'));
+          const arr = getCust();
+          arr.splice(i,1);
+          setCust(arr);
+          renderCustTable();
+        });
+      });
+    }
+
+    $('#exportCustomers').addEventListener('click', ()=>{
+      const rows = [['name','contact','memo','at'], ...getCust().map(r=>[r.name, r.contact||'', (r.memo||'').replace(/\n/g,' '), r.at||''])];
+      downloadCSV('customers.csv', rows);
+    });
+
+    // ---------- LINE (dummy) ----------
+    $('#sendLine').addEventListener('click', ()=>{
+      const msg = $('#lineMsg').value.trim();
+      if(!msg) { alert('メッセージを入力してください'); return; }
+      alert('LINE配信しました！（ダミー）\n\n' + msg);
+    });
+
+    // ---------- 設定 ----------
+    $('#resetData').addEventListener('click', ()=>{
+      if(confirm('本当に端末内のデータを全消去しますか？（売上/顧客/来店回数）')){
+        localStorage.removeItem(SALES_KEY);
+        localStorage.removeItem(CUST_KEY);
+        localStorage.removeItem(VISIT_KEY);
+        renderToday();
+        renderSalesTable();
+        renderCustTable();
+        renderCompare();
+        renderDailySummary();
+        alert('削除しました');
+      }
+    });
+
+    // ---------- CSV / 安全 ----------
+    function downloadCSV(filename, rows){
+      const csv = rows.map(r=>r.map(x => {
+        const s = String(x);
+        return (s.includes(',')||s.includes('"')||s.includes('\n')) ? '"' + s.replace(/"/g,'""') + '"' : s;
+      }).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    }
+
+    // 初期表示
+    (function init(){
+      // 比較の日付デフォルト：A=今日、B=前日
+      $('#cmpDateA').value = todayStr();
+      $('#cmpDateB').value = prevDateStr(todayStr());
+      renderVisits();
+      renderToday();
+      renderCompare();
+      renderDailySummary();
+      renderSalesTable();
+      renderCustTable();
+    })();
+  </script>
 </body>
 </html>
