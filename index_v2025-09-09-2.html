@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>chopsticks Re:born｜売上 & 顧客管理 v2025-09-09-2</title>
+<style>
+  :root{--pad:12px;--gap:10px;--bd:#ddd;--muted:#666}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","BIZ UDPGothic",sans-serif;margin:0;background:#fafafa;color:#222}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--bd);padding:8px}
+  .version{font-size:12px;color:#555}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .tabs button{padding:8px 14px;border:1px solid var(--bd);background:#fff;border-radius:8px;cursor:pointer}
+  .tabs button.active{background:#111;color:#fff;border-color:#111}
+  main{padding:16px;max-width:1100px;margin:0 auto}
+  section{display:none;background:#fff;border:1px solid var(--bd);border-radius:10px;padding:16px}
+  section.active{display:block}
+  h2{margin:0 0 12px}
+  form{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin:0 0 12px}
+  form.single{grid-template-columns:1fr}
+  label{font-size:12px;color:var(--muted)}
+  input,select,textarea,button{font-size:16px}
+  input,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:8px;background:#fff}
+  textarea{min-height:70px;grid-column:1/-1}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:10px 14px;border-radius:8px;border:1px solid var(--bd);background:#fff;cursor:pointer}
+  .btn.primary{background:#111;color:#fff;border-color:#111}
+  .btn.danger{border-color:#e00;color:#e00;background:#fff}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--bd);padding:10px;text-align:left;vertical-align:top}
+  tfoot td{font-weight:bold}
+  .muted{color:var(--muted);font-size:12px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--bd);font-size:12px}
+  .pill.green{color:#0a0;border-color:#0a0}
+  .pill.blue{color:#06c;border-color:#06c}
+  .pill.gray{color:#555}
+  .flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .right{margin-left:auto}
+  .notice{background:#eef8ff;border:1px solid #cfe7ff;padding:10px;border-radius:8px;margin:0 0 12px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--gap)}
+</style>
+</head>
+<body>
+<header>
+  <div class="version">ビルド: <strong>v2025-09-09-2（決済区分 追加）</strong> ／ 時刻: <span id="buildTime"></span></div>
+  <div class="tabs">
+    <button data-tab="sales" class="active">売上管理</button>
+    <button data-tab="customers">顧客管理</button>
+    <button data-tab="analytics">集計/比較</button>
+  </div>
+</header>
+<main>
+  <!-- 売上管理 -->
+  <section id="sales" class="active">
+    <h2>売上管理（個別会計 → 日別合計に集計）</h2>
+    <div class="notice">二重保存対策：保存後1秒はボタン無効化。同一内容の短時間連打は拒否します。</div>
+    <form id="saleForm">
+      <div>
+        <label>会計日</label>
+        <input type="date" id="saleDate" required />
+      </div>
+      <div>
+        <label>対象</label>
+        <select id="saleCustomer" required></select>
+      </div>
+      <div>
+        <label>金額（円・税込）</label>
+        <input type="number" id="saleAmount" min="0" step="1" required />
+      </div>
+      <div>
+        <label>決済</label>
+        <select id="salePayType" required>
+          <option value="cash">現金</option>
+          <option value="card">カード</option>
+          <option value="cl">CL</option>
+        </select>
+      </div>
+      <div class="row">
+        <div>
+          <label>メモ（任意：例 ドリンク3/フード2）</label>
+          <input type="text" id="saleMemo" />
+        </div>
+        <div>
+          <label>明細メモ（任意）</label>
+          <input type="text" id="saleItems" placeholder="自由記入" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="saveSaleBtn" type="submit">保存</button>
+        <button class="btn" type="button" id="clearSaleForm">クリア</button>
+      </div>
+    </form>
+
+    <div class="flex" style="margin-top:6px;">
+      <div class="muted">一覧から削除できます（確認あり）</div>
+      <div class="right">
+        <input type="date" id="salesFilterDate">
+        <button class="btn" id="salesFilterToday">今日</button>
+        <button class="btn" id="salesFilterAll">全件</button>
+      </div>
+    </div>
+
+    <table id="salesTable">
+      <thead>
+        <tr>
+          <th>会計日</th><th>対象</th><th>区分</th><th>決済</th><th>金額</th><th>メモ</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr><td colspan="4">合計</td><td id="salesSum">0</td><td colspan="2"></td></tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <!-- 顧客管理 -->
+  <section id="customers">
+    <h2>顧客管理（新規/常連・来店履歴）</h2>
+    <form id="customerForm" class="single">
+      <div class="row">
+        <div>
+          <label>お名前</label>
+          <input type="text" id="custName" placeholder="例）山田太郎" required />
+        </div>
+        <div>
+          <label>区分</label>
+          <div class="actions">
+            <button class="btn pill blue" type="button" id="markNew">新規</button>
+            <button class="btn pill green" type="button" id="markRegular">常連</button>
+            <span class="muted">（手動で切替できます）</span>
+          </div>
+          <input type="hidden" id="custType" value="new" />
+        </div>
+      </div>
+      <textarea id="custNote" placeholder="メモ（好み・注意事項など）"></textarea>
+      <div class="actions">
+        <button class="btn primary" type="submit">顧客を追加</button>
+      </div>
+    </form>
+
+    <div class="row" style="margin-top:6px;">
+      <div>
+        <label>来店履歴の登録</label>
+        <form id="visitForm">
+          <div class="row">
+            <div>
+              <select id="visitCustomer" required></select>
+            </div>
+            <div>
+              <input type="date" id="visitDate" required />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <input type="number" id="visitParty" min="1" step="1" placeholder="人数" required />
+            </div>
+            <div>
+              <input type="text" id="visitCompanions" placeholder="同伴：例 会社の同僚3人 / Aさん" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" type="submit">履歴を追加</button>
+          </div>
+        </form>
+      </div>
+      <div>
+        <label>顧客検索</label>
+        <input type="text" id="custSearch" placeholder="名前で検索" />
+      </div>
+    </div>
+
+    <table id="customersTable" style="margin-top:10px;">
+      <thead>
+        <tr><th>名前</th><th>区分</th><th>メモ</th><th>来店回数</th><th>最終来店</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 集計/比較 -->
+  <section id="analytics">
+    <h2>集計 / 新規 vs 常連 比較 ＋ 決済別</h2>
+    <div class="row">
+      <div>
+        <label>集計日（単日）</label>
+        <input type="date" id="aggDate" />
+      </div>
+      <div class="actions" style="align-items:end;">
+        <button class="btn" id="aggToday">今日</button>
+        <button class="btn" id="aggRun">集計</button>
+      </div>
+    </div>
+
+    <table id="aggTable" style="margin-top:10px;">
+      <thead>
+        <tr><th>日付</th><th>総売上</th><th>新規</th><th>常連</th><th>一見</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3 style="margin-top:18px;">決済別内訳（当日）</h3>
+    <table id="payBreakdown">
+      <thead><tr><th>現金</th><th>カード</th><th>CL</th><th>未指定</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <h3 style="margin-top:18px;">明細（当日）</h3>
+    <table id="aggBreakdown">
+      <thead>
+        <tr><th>会計日</th><th>対象</th><th>区分</th><th>決済</th><th>金額</th><th>メモ</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+console.log('Loaded build v2025-09-09-2');
+document.getElementById('buildTime').textContent = new Date().toLocaleString();
+
+/** ===== データ保存（LocalStorage） ===== */
+const DB = {
+  load(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback }catch{ return fallback } },
+  save(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
+};
+let customers = DB.load('customers', []);     // {id,name,type:new|regular,note,createdAt}
+let visits    = DB.load('visits', []);        // {id,customerId,date,party,companions}
+let sales     = DB.load('sales', []);         // {id,date,customerId|null,label,amount,memo,items,newOrRegular:'new'|'regular'|'walkin',payment:'cash'|'card'|'cl'|'unknown',createdAt}
+
+/** 既存データの移行：payment が無いレコードに 'unknown' を付与 */
+if(Array.isArray(sales)){
+  let migrated = false;
+  for(const s of sales){
+    if(!('payment' in s)){ s.payment = 'unknown'; migrated = true; }
+  }
+  if(migrated){ DB.save('sales', sales); }
+}
+
+const todayStr = ()=> new Date().toISOString().slice(0,10);
+const byDateAsc = (a,b)=> (a.date||'').localeCompare(b.date||'');
+const nanoid = ()=> Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+
+/** ===== 画面切替 ===== */
+document.querySelectorAll('.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    if(tab==='sales') renderSales();
+    if(tab==='customers') { refreshCustomerSelectors(); renderCustomers(); }
+    if(tab==='analytics') runAggregation();
+  });
+});
+
+/** ===== 初期値 ===== */
+document.getElementById('saleDate').value = todayStr();
+document.getElementById('visitDate').value = todayStr();
+document.getElementById('aggDate').value = todayStr();
+document.getElementById('salePayType').value = 'cash';
+
+/** ===== 顧客関連 ===== */
+function refreshCustomerSelectors(){
+  const options = [
+    {value:'__WALKIN__', label:'一見さん（匿名）'},
+    ...customers.map(c=>({value:c.id, label:`${c.name}`})),
+  ];
+  for(const selId of ['saleCustomer','visitCustomer']){
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '';
+    for(const o of options){
+      const opt = document.createElement('option');
+      opt.value=o.value; opt.textContent=o.label;
+      sel.appendChild(opt);
+    }
+  }
+}
+function renderCustomers(){
+  const q = (document.getElementById('custSearch').value||'').trim();
+  const tbody = document.querySelector('#customersTable tbody');
+  tbody.innerHTML = '';
+  const list = customers
+    .filter(c=>!q||c.name.includes(q))
+    .map(c=>{
+      const v = visits.filter(v=>v.customerId===c.id).sort(byDateAsc);
+      const last = v.length? v[v.length-1].date : '-';
+      return {c, count:v.length, last};
+    });
+  for(const {c,count,last} of list){
+    const tr = document.createElement('tr');
+    const pill = c.type==='regular' ? '<span class="pill green">常連</span>' : '<span class="pill blue">新規</span>';
+    tr.innerHTML = `
+      <td>${escapeHtml(c.name)}</td>
+      <td>${pill} <button class="btn pill gray" data-toggle="${c.id}">切替</button></td>
+      <td>${escapeHtml(c.note||'')}</td>
+      <td>${count}</td>
+      <td>${last}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll('button[data-toggle]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.dataset.toggle;
+      const c = customers.find(x=>x.id===id);
+      c.type = (c.type==='regular')?'new':'regular';
+      DB.save('customers', customers);
+      renderCustomers();
+      refreshCustomerSelectors();
+    };
+  });
+}
+
+document.getElementById('markNew').onclick = ()=> document.getElementById('custType').value='new';
+document.getElementById('markRegular').onclick = ()=> document.getElementById('custType').value='regular';
+
+document.getElementById('customerForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = document.getElementById('custName').value.trim();
+  if(!name) return;
+  customers.push({id:nanoid(), name, type:document.getElementById('custType').value, note:document.getElementById('custNote').value.trim(), createdAt:Date.now()});
+  DB.save('customers', customers);
+  e.target.reset();
+  document.getElementById('custType').value='new';
+  refreshCustomerSelectors();
+  renderCustomers();
+});
+
+document.getElementById('visitForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const customerId = document.getElementById('visitCustomer').value;
+  if(customerId==='__WALKIN__'){ alert('来店履歴は顧客を選択してください。'); return; }
+  visits.push({
+    id:nanoid(),
+    customerId,
+    date:document.getElementById('visitDate').value,
+    party:parseInt(document.getElementById('visitParty').value||'0',10),
+    companions:document.getElementById('visitCompanions').value.trim()
+  });
+  DB.save('visits', visits);
+  e.target.reset();
+  document.getElementById('visitDate').value = todayStr();
+  renderCustomers();
+});
+document.getElementById('custSearch').addEventListener('input', renderCustomers);
+
+/** ===== 売上（保存→一覧へ即反映、二重保存防止、削除確認） ===== */
+let lastSaleFingerprint = null;
+let lastSaleTime = 0;
+
+document.getElementById('salesFilterToday').onclick = ()=>{ document.getElementById('salesFilterDate').value=todayStr(); renderSales(); };
+document.getElementById('salesFilterAll').onclick = ()=>{ document.getElementById('salesFilterDate').value=''; renderSales(); };
+
+document.getElementById('saleForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const btn = document.getElementById('saveSaleBtn');
+  btn.disabled = true; setTimeout(()=>btn.disabled=false, 1000); // 1秒ボタン無効化（誤連打ガード）
+
+  const date = document.getElementById('saleDate').value;
+  const selVal = document.getElementById('saleCustomer').value;
+  const amount = parseInt(document.getElementById('saleAmount').value||'0',10);
+  const memo = document.getElementById('saleMemo').value.trim();
+  const items = document.getElementById('saleItems').value.trim();
+  const payment = document.getElementById('salePayType').value; // 'cash'|'card'|'cl'
+  const label = selVal==='__WALKIN__' ? '一見さん' : (customers.find(c=>c.id===selVal)?.name || '不明');
+
+  // 指紋で同一内容の短時間二重保存を拒否（10秒以内）
+  const fp = JSON.stringify({date, selVal, amount, memo, items, payment});
+  const now = Date.now();
+  if(lastSaleFingerprint===fp && (now - lastSaleTime) < 10000){
+    alert('同じ内容が直前に保存されています（二重保存を防止しました）');
+    return;
+  }
+  lastSaleFingerprint = fp; lastSaleTime = now;
+
+  // 新規/常連の判定
+  let newOrRegular = 'walkin';
+  if(selVal==='__WALKIN__'){
+    newOrRegular = 'walkin';
+  }else{
+    const past = sales.filter(s=>s.customerId===selVal);
+    newOrRegular = past.length>0 ? 'regular' : 'new';
+  }
+
+  sales.push({
+    id: nanoid(),
+    date, customerId: (selVal==='__WALKIN__'? null: selVal),
+    label, amount, memo, items,
+    newOrRegular,
+    payment, // 追加
+    createdAt: Date.now()
+  });
+  DB.save('sales', sales);
+
+  renderSales();
+
+  document.getElementById('saleAmount').value='';
+  document.getElementById('saleMemo').value='';
+  document.getElementById('saleItems').value='';
+});
+
+function payLabel(p){ return p==='cash'?'現金':p==='card'?'カード':p==='cl'?'CL':'未指定'; }
+
+function renderSales(){
+  const tbody = document.querySelector('#salesTable tbody');
+  const filterDate = document.getElementById('salesFilterDate').value;
+  let list = sales.slice().sort(byDateAsc);
+  if(filterDate) list = list.filter(s=>s.date===filterDate);
+  tbody.innerHTML = '';
+  let sum = 0;
+  for(const s of list){
+    sum += s.amount||0;
+    const badge = s.newOrRegular==='regular' ? '<span class="pill green">常連</span>' :
+                  s.newOrRegular==='new' ? '<span class="pill blue">新規</span>' :
+                  '<span class="pill gray">一見</span>';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${s.date||''}</td>
+      <td>${escapeHtml(s.label||'')}</td>
+      <td>${badge}</td>
+      <td>${payLabel(s.payment)}</td>
+      <td>${(s.amount||0).toLocaleString()}</td>
+      <td>${escapeHtml(s.memo||'')}</td>
+      <td><button class="btn danger" data-del="${s.id}">削除</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('salesSum').textContent = sum.toLocaleString();
+
+  // 削除（確認付き）
+  tbody.querySelectorAll('button[data-del]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.dataset.del;
+      const row = sales.find(x=>x.id===id);
+      if(!row) return;
+      if(confirm(`削除しますか？\n\n${row.date} / ${row.label} / ${payLabel(row.payment)} / ¥${(row.amount||0).toLocaleString()}`)){
+        sales = sales.filter(x=>x.id!==id);
+        DB.save('sales', sales);
+        renderSales();
+      }
+    };
+  });
+}
+
+/** ===== 集計/比較（単日） ===== */
+function runAggregation(){
+  const date = document.getElementById('aggDate').value || todayStr();
+  const daySales = sales.filter(s=>s.date===date);
+  const sum = (arr)=> arr.reduce((a,b)=>a+(b.amount||0),0);
+  const total = sum(daySales);
+  const sumNew = sum(daySales.filter(s=>s.newOrRegular==='new'));
+  const sumReg = sum(daySales.filter(s=>s.newOrRegular==='regular'));
+  const sumWalk= sum(daySales.filter(s=>s.newOrRegular==='walkin'));
+
+  const tbody = document.querySelector('#aggTable tbody');
+  tbody.innerHTML = `
+    <tr>
+      <td>${date}</td>
+      <td>¥${total.toLocaleString()}</td>
+      <td>¥${sumNew.toLocaleString()}</td>
+      <td>¥${sumReg.toLocaleString()}</td>
+      <td>¥${sumWalk.toLocaleString()}</td>
+    </tr>
+  `;
+
+  // 決済別集計
+  const sumPay = (key)=> sum(daySales.filter(s=> (s.payment||'unknown')===key ));
+  const cash = sumPay('cash');
+  const card = sumPay('card');
+  const cl   = sumPay('cl');
+  const unknown = sumPay('unknown');
+
+  const pbody = document.querySelector('#payBreakdown tbody');
+  pbody.innerHTML = `
+    <tr><td>¥${cash.toLocaleString()}</td><td>¥${card.toLocaleString()}</td><td>¥${cl.toLocaleString()}</td><td>¥${unknown.toLocaleString()}</td></tr>
+  `;
+
+  // 明細
+  const bd = document.querySelector('#aggBreakdown tbody');
+  bd.innerHTML = '';
+  for(const s of daySales){
+    const badge = s.newOrRegular==='regular' ? '常連' : (s.newOrRegular==='new' ? '新規' : '一見');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${s.date}</td><td>${escapeHtml(s.label||'')}</td><td>${badge}</td><td>${payLabel(s.payment)}</td><td>¥${(s.amount||0).toLocaleString()}</td><td>${escapeHtml(s.memo||'')}</td>`;
+    bd.appendChild(tr);
+  }
+}
+document.getElementById('aggToday').onclick = ()=>{ document.getElementById('aggDate').value=todayStr(); runAggregation(); };
+document.getElementById('aggRun').onclick = runAggregation;
+
+/** ===== ユーティリティ ===== */
+function escapeHtml(str){ return (str||'').replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
+
+/** ===== 初回描画 ===== */
+refreshCustomerSelectors();
+renderCustomers();
+renderSales();
+runAggregation();
+</script>
+</body>
+</html>
