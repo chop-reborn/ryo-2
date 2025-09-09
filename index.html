@@ -3,33 +3,31 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>chopsticks Re:born｜売上 & 顧客管理 v2025-09-09-2</title>
+<title>chopsticks Re:born｜売上 & 顧客管理 v2025-09-09-4</title>
 <style>
   :root{--pad:12px;--gap:10px;--bd:#ddd;--muted:#666}
+  *{box-sizing:border-box}
   body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","BIZ UDPGothic",sans-serif;margin:0;background:#fafafa;color:#222}
-  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--bd);padding:8px}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--bd);padding:10px 12px}
   .version{font-size:12px;color:#555}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-  .tabs button{padding:8px 14px;border:1px solid var(--bd);background:#fff;border-radius:8px;cursor:pointer}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .tabs button{padding:8px 14px;border:1px solid var(--bd);background:#fff;border-radius:10px;cursor:pointer}
   .tabs button.active{background:#111;color:#fff;border-color:#111}
   main{padding:16px;max-width:1100px;margin:0 auto}
-  section{display:none;background:#fff;border:1px solid var(--bd);border-radius:10px;padding:16px}
+  section{display:none;background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px}
   section.active{display:block}
   h2{margin:0 0 12px}
   form{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin:0 0 12px}
   form.single{grid-template-columns:1fr}
   label{font-size:12px;color:var(--muted)}
   input,select,textarea,button{font-size:16px}
-  input,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:8px;background:#fff}
+  input,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:10px;background:#fff}
   textarea{min-height:70px;grid-column:1/-1}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
   .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .btn{padding:10px 14px;border-radius:8px;border:1px solid var(--bd);background:#fff;cursor:pointer}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:#fff;cursor:pointer}
   .btn.primary{background:#111;color:#fff;border-color:#111}
   .btn.danger{border-color:#e00;color:#e00;background:#fff}
-  table{width:100%;border-collapse:collapse}
-  th,td{border-bottom:1px solid var(--bd);padding:10px;text-align:left;vertical-align:top}
-  tfoot td{font-weight:bold}
   .muted{color:var(--muted);font-size:12px}
   .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--bd);font-size:12px}
   .pill.green{color:#0a0;border-color:#0a0}
@@ -37,13 +35,26 @@
   .pill.gray{color:#555}
   .flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .right{margin-left:auto}
-  .notice{background:#eef8ff;border:1px solid #cfe7ff;padding:10px;border-radius:8px;margin:0 0 12px}
-  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--gap)}
+  .notice{background:#eef8ff;border:1px solid #cfe7ff;padding:10px;border-radius:10px;margin:0 0 12px}
+  .table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px;border:1px solid var(--bd);border-radius:10px;background:#fff}
+  table{width:100%;border-collapse:collapse;min-width:700px}
+  th,td{border-bottom:1px solid var(--bd);padding:10px;text-align:left;vertical-align:top;white-space:nowrap}
+  td:last-child, th:last-child{white-space:initial}
+  tfoot td{font-weight:bold}
+  /* Mobile tweaks */
+  @media (max-width:700px){
+    main{padding:10px}
+    form{grid-template-columns:1fr !important;}
+    .row{grid-template-columns:1fr !important;}
+    .actions{flex-direction:column;align-items:stretch}
+    table{min-width:560px}
+    .tabs button{flex:1}
+  }
 </style>
 </head>
 <body>
 <header>
-  <div class="version">ビルド: <strong>v2025-09-09-2（決済区分 追加）</strong> ／ 時刻: <span id="buildTime"></span></div>
+  <div class="version">ビルド: <strong>v2025-09-09-4（レスポンシブ＋タブ復活＋決済別集計）</strong> ／ 時刻: <span id="buildTime"></span></div>
   <div class="tabs">
     <button data-tab="sales" class="active">売上管理</button>
     <button data-tab="customers">顧客管理</button>
@@ -54,7 +65,7 @@
   <!-- 売上管理 -->
   <section id="sales" class="active">
     <h2>売上管理（個別会計 → 日別合計に集計）</h2>
-    <div class="notice">二重保存対策：保存後1秒はボタン無効化。同一内容の短時間連打は拒否します。</div>
+    <div class="notice">二重保存対策：保存後1秒はボタン無効化。同一内容の短時間連打は拒否します。削除は確認付き。</div>
     <form id="saleForm">
       <div>
         <label>会計日</label>
@@ -101,17 +112,19 @@
       </div>
     </div>
 
-    <table id="salesTable">
-      <thead>
-        <tr>
-          <th>会計日</th><th>対象</th><th>区分</th><th>決済</th><th>金額</th><th>メモ</th><th>操作</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr><td colspan="4">合計</td><td id="salesSum">0</td><td colspan="2"></td></tr>
-      </tfoot>
-    </table>
+    <div class="table-wrapper">
+      <table id="salesTable">
+        <thead>
+          <tr>
+            <th>会計日</th><th>対象</th><th>区分</th><th>決済</th><th>金額</th><th>メモ</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr><td colspan="4">合計</td><td id="salesSum">0</td><td colspan="2"></td></tr>
+        </tfoot>
+      </table>
+    </div>
   </section>
 
   <!-- 顧客管理 -->
@@ -170,12 +183,14 @@
       </div>
     </div>
 
-    <table id="customersTable" style="margin-top:10px;">
-      <thead>
-        <tr><th>名前</th><th>区分</th><th>メモ</th><th>来店回数</th><th>最終来店</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper" style="margin-top:10px;">
+      <table id="customersTable">
+        <thead>
+          <tr><th>名前</th><th>区分</th><th>メモ</th><th>来店回数</th><th>最終来店</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </section>
 
   <!-- 集計/比較 -->
@@ -192,31 +207,37 @@
       </div>
     </div>
 
-    <table id="aggTable" style="margin-top:10px;">
-      <thead>
-        <tr><th>日付</th><th>総売上</th><th>新規</th><th>常連</th><th>一見</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper" style="margin-top:10px;">
+      <table id="aggTable">
+        <thead>
+          <tr><th>日付</th><th>総売上</th><th>新規</th><th>常連</th><th>一見</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
     <h3 style="margin-top:18px;">決済別内訳（当日）</h3>
-    <table id="payBreakdown">
-      <thead><tr><th>現金</th><th>カード</th><th>CL</th><th>未指定</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="payBreakdown">
+        <thead><tr><th>現金</th><th>カード</th><th>CL</th><th>未指定</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
     <h3 style="margin-top:18px;">明細（当日）</h3>
-    <table id="aggBreakdown">
-      <thead>
-        <tr><th>会計日</th><th>対象</th><th>区分</th><th>決済</th><th>金額</th><th>メモ</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="aggBreakdown">
+        <thead>
+          <tr><th>会計日</th><th>対象</th><th>区分</th><th>決済</th><th>金額</th><th>メモ</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </section>
 </main>
 
 <script>
-console.log('Loaded build v2025-09-09-2');
+console.log('Loaded build v2025-09-09-4');
 document.getElementById('buildTime').textContent = new Date().toLocaleString();
 
 /** ===== データ保存（LocalStorage） ===== */
@@ -241,7 +262,7 @@ const todayStr = ()=> new Date().toISOString().slice(0,10);
 const byDateAsc = (a,b)=> (a.date||'').localeCompare(b.date||'');
 const nanoid = ()=> Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 
-/** ===== 画面切替 ===== */
+/** ===== タブ切替 ===== */
 document.querySelectorAll('.tabs button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
@@ -362,7 +383,7 @@ document.getElementById('saleForm').addEventListener('submit', e=>{
   const amount = parseInt(document.getElementById('saleAmount').value||'0',10);
   const memo = document.getElementById('saleMemo').value.trim();
   const items = document.getElementById('saleItems').value.trim();
-  const payment = document.getElementById('salePayType').value; // 'cash'|'card'|'cl'
+  const payment = document.getElementById('salePayType').value;
   const label = selVal==='__WALKIN__' ? '一見さん' : (customers.find(c=>c.id===selVal)?.name || '不明');
 
   // 指紋で同一内容の短時間二重保存を拒否（10秒以内）
@@ -388,7 +409,7 @@ document.getElementById('saleForm').addEventListener('submit', e=>{
     date, customerId: (selVal==='__WALKIN__'? null: selVal),
     label, amount, memo, items,
     newOrRegular,
-    payment, // 追加
+    payment,
     createdAt: Date.now()
   });
   DB.save('sales', sales);
